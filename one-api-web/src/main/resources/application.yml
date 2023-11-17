@@ -1,0 +1,7 @@
+spring:
+  application:
+    # 应用名称
+    name: one-api-web
+  profiles:
+    # 环境配置
+    active: test

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>one-api-security</module>
+        <module>one-api-web</module>
+        <module>one-api-common</module>
+        <module>one-api-core</module>
+    </modules>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.11</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.tang</groupId>
+    <artifactId>one-api-java</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>one-api-java</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <java.version>1.8</java.version>
+        <velocity.version>2.3</velocity.version>
+        <spring-boot.version>2.7.11</spring-boot.version>
+        <mysql-connector.version>8.0.29</mysql-connector.version>
+        <mybatis-plus.version>3.5.1</mybatis-plus.version>
+        <druid.version>1.2.16</druid.version>
+        <commons-csv.version>1.8</commons-csv.version>
+        <hutool.version>5.8.9</hutool.version>
+        <chatgpt-java.version>1.1.2-beta0</chatgpt-java.version>
+        <flakeid-generator.version>2.0.0</flakeid-generator.version>
+        <fastjson.version>2.0.25</fastjson.version>
+        <sa-token-jwt.version>1.37.0</sa-token-jwt.version>
+        <chatgpt-java.version>1.0.14-beta1</chatgpt-java.version>
+        <pagehelper.boot.version>1.4.6</pagehelper.boot.version>
+        <jjwt.version>0.9.1</jjwt.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <!-- Maven 依赖仓库 -->
+    <repositories>
+        <repository>
+            <id>public</id>
+            <name>aliyun nexus</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+</project>
