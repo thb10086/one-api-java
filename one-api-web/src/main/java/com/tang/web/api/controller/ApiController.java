@@ -3,6 +3,7 @@ package com.tang.web.api.controller;
 import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.api.service.ForwardHandleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +23,8 @@ public class ApiController {
         return forwardHandleService.completions(chatCompletion,authorization);
     }
 
-    @PostMapping("/v1/chat/completions")
+
+    @PostMapping(value = "/v1/chat/completions")
     public SseEmitter Chatcompletions(@RequestBody ChatCompletion chatCompletion, HttpServletRequest request){
         String authorization = request.getHeader("Authorization");
         return forwardHandleService.completions(chatCompletion,authorization);

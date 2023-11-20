@@ -2,12 +2,15 @@ package com.tang.common.exception;
 
 import com.tang.common.domain.R;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -51,6 +54,11 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         log.error(e.getMessage());
         return R.fail(500, e.getMessage());
+    }
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    @ResponseBody
+    public R<?> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
+        return R.fail(500, "请求超时："+e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
