@@ -34,6 +34,11 @@ public class ChannelsVo {
     private List<Long> models;
 
     /**
+     * 策略模式
+     */
+    private Integer strategy;
+
+    /**
      * 代理地址
      */
     private String proxyAddress;

@@ -50,6 +50,11 @@ public class ChannelsDto implements Serializable {
     private String models;
 
     /**
+     * 策略
+     */
+    private Integer strategy;
+
+    /**
      * 代理地址
      */
     private String proxyAddress;

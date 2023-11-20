@@ -2,6 +2,7 @@ package com.tang.core.modules.channel.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tang.common.config.RedisService;
@@ -116,13 +117,20 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
 
 
     void saveRedisCache(Channels channels,List<PlatformApiKeysDto> apiKeys,List<ChannelModel> models,List<ChannelGroup> groups){
+        //设置默认的权重
+        for (PlatformApiKeysDto apiKey : apiKeys) {
+             apiKey.setIsDisabled(false);
+             apiKey.setWeight(0);
+        }
         ChannelsVo vo = new ChannelsVo();
         vo.setChannelName(channels.getChannelName());
         vo.setChannelType(channels.getChannelType());
         vo.setApiKeys(apiKeys);
+        vo.setStrategy(channels.getStrategy());
         vo.setModels(models.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
         vo.setGroupIds(groups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
-        redisService.setCacheObject(RedisConstants.CACHE_CHANNEL+channels.getChannelId(),vo);
+        String jsonObject = JSON.toJSONString(vo);
+        redisService.setCacheObject(RedisConstants.CACHE_CHANNEL+channels.getChannelId(),jsonObject);
     }
 
     //保存平台apikey
@@ -188,7 +196,9 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         //检查模型列表是否正确。
         Assert.isTrue(iModelsService.checkModels(channelsDto.getModels()),"不存在的模型");
         Assert.isTrue(iGroupsService.checkGroups(channelsDto.getGroupId()),"不存在的分组");
-        Assert.isTrue(channelsDto.getProxyAddress().matches(Constants.URL_PATTERN),"代理地址格式不正确");
+        if (StringUtils.hasText(channelsDto.getProxyAddress())){
+            Assert.isTrue(channelsDto.getProxyAddress().matches(Constants.URL_PATTERN),"代理地址格式不正确");
+        }
     }
 
     public List<String> analysisApiKeysByCsv(MultipartFile csvFile){

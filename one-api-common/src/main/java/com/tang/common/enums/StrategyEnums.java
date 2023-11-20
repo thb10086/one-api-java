@@ -1,8 +1,8 @@
 package com.tang.common.enums;
 
-public enum ChannelTypeEnums {
-    OPEN_AI(0,"OpenAI"),AZURE(5,"Azure");
-    ChannelTypeEnums(Integer code, String type){
+public enum StrategyEnums {
+    WEIGHT(0,"权重");
+    StrategyEnums(Integer code, String type){
         this.code=code;
         this.type=type;
     }
@@ -10,7 +10,7 @@ public enum ChannelTypeEnums {
     private String type;
 
     public static Boolean byI(Integer code){
-        for (ChannelTypeEnums type : ChannelTypeEnums.values()) {
+        for (StrategyEnums type : StrategyEnums.values()) {
             if (code.equals(type.code)){
                 return true;
             }
@@ -18,21 +18,21 @@ public enum ChannelTypeEnums {
         return false;
     }
 
-    public static ChannelTypeEnums get(Integer code){
-        for (ChannelTypeEnums type : ChannelTypeEnums.values()) {
+    public static StrategyEnums get(Integer code){
+        for (StrategyEnums type : StrategyEnums.values()) {
             if (code.equals(type.code)){
                 return type;
             }
         }
-        return ChannelTypeEnums.OPEN_AI;
+        return StrategyEnums.WEIGHT;
     }
 
     public static String getType(Integer code){
-        for (ChannelTypeEnums type : ChannelTypeEnums.values()) {
+        for (StrategyEnums type : StrategyEnums.values()) {
             if (code.equals(type.code)){
                 return type.type;
             }
         }
-        return "默认渠道";
+        return "";
     }
 }

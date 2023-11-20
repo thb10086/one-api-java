@@ -35,6 +35,11 @@ public class Channels extends BaseEntity implements Serializable {
      */
     private Integer channelType;
 
+    /**
+     * 策略
+     */
+    private Integer strategy;
+
 
     /**
      * 是否禁用

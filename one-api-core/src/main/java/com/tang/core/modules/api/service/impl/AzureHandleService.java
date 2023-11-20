@@ -1,12 +1,15 @@
 package com.tang.core.modules.api.service.impl;
 
+import com.tang.common.annotation.ChannelType;
+import com.tang.common.enums.ChannelTypeEnums;
+import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.api.service.BaseHandleService;
 import com.tang.core.modules.channel.model.dto.ChannelsVo;
-import com.unfbx.chatgpt.entity.chat.ChatCompletion;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
+@ChannelType(ChannelTypeEnums.AZURE)
 public class AzureHandleService implements BaseHandleService {
     @Override
     public SseEmitter completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey) {

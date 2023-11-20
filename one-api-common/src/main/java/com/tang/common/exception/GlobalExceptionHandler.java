@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public R<Object> exceptionHandler(Exception e) {
-
+        e.printStackTrace();
         log.error(e.getMessage());
         return R.fail(500, e.getMessage());
     }

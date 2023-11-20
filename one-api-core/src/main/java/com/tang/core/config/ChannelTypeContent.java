@@ -16,7 +16,7 @@ public class ChannelTypeContent implements InitializingBean {
     @Autowired
     public List<BaseHandleService> handleServices;
 
-    public static Map<ChannelTypeEnums,BaseHandleService> CONTENT = new HashMap<>();
+    public static  Map<ChannelTypeEnums,BaseHandleService> CONTENT = new HashMap<>();
 
     @Override
     public void afterPropertiesSet() throws Exception {
