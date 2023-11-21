@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @ChannelType(ChannelTypeEnums.AZURE)
 public class AzureHandleService implements BaseHandleService {
     @Override
-    public SseEmitter completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey) {
+    public Object completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey) {
         return null;
     }
 }

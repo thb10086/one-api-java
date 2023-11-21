@@ -35,7 +35,6 @@ public class OpenAiListener extends EventSourceListener {
                 return;
             }
             ChatCompletionResponse response = JSON.parseObject(data, ChatCompletionResponse.class);
-            log.info(data);
             sseEmitter.send(SseEmitter.event()
                     .id(id)
                     .data(response)
@@ -49,7 +48,6 @@ public class OpenAiListener extends EventSourceListener {
     public void onFailure(@NotNull EventSource eventSource, @Nullable Throwable t, @Nullable Response response) {
         log.info("连接异常");
         log.info(response.message());
-
         sseEmitter.completeWithError(t);
         eventSource.cancel();
         t.printStackTrace();

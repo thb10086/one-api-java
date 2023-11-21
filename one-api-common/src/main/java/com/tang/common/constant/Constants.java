@@ -141,6 +141,9 @@ public class Constants
 
     public static final String DEFAULT_API_URL = "/v1/chat/completions";
 
+    public static final String DEFAULT_ACCEPT = "*/*";
+
+    public static final String STREAM_ACCEPT = "text/event-stream";
 
     public static final String URL_PATTERN ="^(http://|https://)?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}(/.*)?$";
 

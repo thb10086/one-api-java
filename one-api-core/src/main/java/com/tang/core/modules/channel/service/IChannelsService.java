@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.tang.core.modules.channel.model.dto.ChannelsDto;
 import com.tang.core.modules.channel.model.dto.ChannelsReqDto;
 import com.tang.core.modules.channel.model.dto.ChannelsResponseDto;
+import com.tang.core.modules.channel.model.dto.ChannelsVo;
 
 import java.util.List;
 
@@ -26,16 +27,16 @@ public interface IChannelsService extends IService<Channels> {
     Boolean createChannel(ChannelsDto channelsDto);
 
     /**
-     * 修改渠道
+     * 修改渠道 （同时修改缓存！）
      * @return
      */
-    Boolean updateChannel();
+    Boolean updateChannel(ChannelsDto channelsDto);
 
     /**
      * 删除渠道
      * @return
      */
-    Boolean deleteChannel();
+    Boolean deleteChannel(Long channelId);
 
     /**
      * 查询渠道
@@ -50,5 +51,12 @@ public interface IChannelsService extends IService<Channels> {
      * @return
      */
     List<Channels> queryChannelList(List<Long> channelIds);
+
+    /**
+     * 根据渠道id查询详情
+     * @param id
+     * @return
+     */
+    ChannelsVo queryChannelsById(Long id);
 
 }

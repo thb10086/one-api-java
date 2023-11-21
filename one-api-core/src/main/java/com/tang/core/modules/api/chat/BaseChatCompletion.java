@@ -108,7 +108,7 @@ public class BaseChatCompletion implements Serializable {
      * @see
      */
     @Builder.Default
-    private boolean stream = false;
+    private Boolean stream = false;
     /**
      * 停止输出标识
      */

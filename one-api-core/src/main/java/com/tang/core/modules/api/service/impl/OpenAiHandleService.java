@@ -9,8 +9,11 @@ import com.tang.common.utils.StringUtils;
 import com.tang.core.config.StrategyContent;
 import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.api.listener.OpenAiListener;
-import com.tang.core.modules.api.request.ApiRequest;
-import com.tang.core.modules.api.request.RequestParams;
+import com.tang.core.modules.api.request.BaseApiRequest;
+import com.tang.core.modules.api.request.DefaultApiRequest;
+import com.tang.core.modules.api.request.StreamApiRequest;
+import com.tang.core.modules.api.request.params.DefaultRequestParams;
+import com.tang.core.modules.api.request.params.StreamRequestParams;
 import com.tang.core.modules.api.service.BaseHandleService;
 import com.tang.core.modules.api.strategy.ApiKeyStrategy;
 import com.tang.core.modules.channel.model.dto.ChannelsVo;
@@ -29,30 +32,58 @@ public class OpenAiHandleService implements BaseHandleService {
     RedisService redisService;
 
     @Autowired
-    ApiRequest apiRequest;
+    StreamApiRequest apiRequest;
+
+    @Autowired
+    DefaultApiRequest defaultApiRequest;
 
     @Override
-    public SseEmitter completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey) {
-        SseEmitter sseEmitter = new SseEmitter();
-        //从渠道中获取apikeys
+    public Object completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey) {
+        // 获取渠道中的api keys
         List<PlatformApiKeysDto> apiKeys = channels.getApiKeys();
-        //获取策略模式
+
+        // 获取策略模式
         ApiKeyStrategy strategy = StrategyContent.CONTENT.get(StrategyEnums.get(channels.getStrategy()));
-        //根据策略获取请求用的apikey
-        PlatformApiKeysDto apiKey1 = strategy.getApiKey(apiKeys);
-        OpenAiListener listener = new OpenAiListener(sseEmitter);
-        RequestParams params = new RequestParams();
+
+        // 使用策略模式获取请求所需的api key
+        PlatformApiKeysDto requestApiKey = strategy.getApiKey(apiKeys);
+
+        // 判断代理地址是否为空，为空则设置为默认值
         if (StringUtils.isEmpty(channels.getProxyAddress())){
             channels.setProxyAddress(Constants.DEFAULT_API_HOST);
-        }else {
-            channels.setProxyAddress(channels.getProxyAddress());
         }
-        params.setUrl(channels.getProxyAddress()+Constants.DEFAULT_API_URL);
-        params.setChatCompletion(chatCompletion);
-        params.setApiKey(apiKey1.getApiKey());
-        params.setListener(listener);
-        //请求服务器
-        apiRequest.request(params);
-        return sseEmitter;
+
+        // 设置请求的URL
+        String url = channels.getProxyAddress() + Constants.DEFAULT_API_URL;
+
+        // 判断是否要进行流式请求
+        if (chatCompletion.getStream()){
+            // 创建SseEmitter
+            SseEmitter sseEmitter = new SseEmitter();
+
+            // 创建并设置监听器
+            OpenAiListener listener = new OpenAiListener(sseEmitter);
+
+            // 创建并设置流式请求参数
+            StreamRequestParams params = new StreamRequestParams();
+            params.setUrl(url);
+            params.setChatCompletion(chatCompletion);
+            params.setApiKey(requestApiKey.getApiKey());
+            params.setListener(listener);
+
+            // 发起请求
+            apiRequest.request(params);
+
+            return sseEmitter;
+        }else {
+            // 创建并设置默认请求参数
+            DefaultRequestParams params = new DefaultRequestParams();
+            params.setUrl(url);
+            params.setChatCompletion(chatCompletion);
+            params.setApiKey(requestApiKey.getApiKey());
+            // 发起请求
+            return defaultApiRequest.request(params);
+        }
+
     }
 }

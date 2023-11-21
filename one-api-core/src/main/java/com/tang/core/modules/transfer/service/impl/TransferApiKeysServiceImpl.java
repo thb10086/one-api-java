@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,14 +63,15 @@ public class TransferApiKeysServiceImpl extends ServiceImpl<TransferApiKeysMappe
         apiKeys.setExpTime(dto.getExpTime());
         apiKeys.setKeyName(dto.getKeyName());
         apiKeys.setIsDisabled(false);
+        apiKeys.setRequestLimit(dto.getRequestLimit());
         apiKeys.setQuotaUsed(BigDecimal.ZERO);
         apiKeys.setQuotaRemaining(dto.getQuota());
         return save(apiKeys);
     }
 
     Boolean checkChannelId(Long channelId){
-        List<Object> list = redisService.getCacheList(RedisConstants.CACHE_CHANNEL + channelId);
-        if (CollectionUtil.isEmpty(list)){
+        Object obj = redisService.getCacheObject(RedisConstants.CACHE_CHANNEL + channelId);
+        if (Objects.isNull(obj)){
             Channels channels = iChannelsService.getById(channelId);
             if (channels==null){
                 return false;

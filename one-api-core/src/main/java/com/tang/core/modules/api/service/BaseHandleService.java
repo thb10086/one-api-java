@@ -12,5 +12,5 @@ public interface BaseHandleService {
      * @param apiKey
      * @return
      */
-    SseEmitter completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey);
+    Object completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey);
 }
