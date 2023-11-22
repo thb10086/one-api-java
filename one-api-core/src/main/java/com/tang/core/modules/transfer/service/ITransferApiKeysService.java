@@ -18,10 +18,46 @@ import java.math.BigDecimal;
  * @since 2023-11-14
  */
 public interface ITransferApiKeysService extends IService<TransferApiKeys> {
+    /**
+     * 创建中转api-key
+     * @param dto
+     * @return
+     */
     Boolean createTransferApiKey(TransferApiKeysCreateDto dto);
+
+    /**
+     * 查询中转api-key
+     * @param dto
+     * @return
+     */
     Page<TransferApiKeysDto> queryTransferApiKeys(TransferApiKeysReqDto dto);
+
+    /**
+     * 删除中转api-key
+     * @param apiKeyId
+     * @return
+     */
     Boolean deleteTransferApiKeys(Long apiKeyId);
+
+    /**
+     * 根据id查询api-key
+     * @param apiKeyId
+     * @return
+     */
     String getApiKey(Long apiKeyId);
+
+    /**
+     * 通过api-key去查询
+     * @param apiKey
+     * @return
+     */
     TransferApiKeys getTransferApiKeysByKey(String apiKey);
+
+    /**
+     * 更新额度
+     * @param apiKeyId
+     * @param quota
+     * @return
+     */
     Boolean updateQuota(Long apiKeyId, BigDecimal quota);
 }
