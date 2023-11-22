@@ -6,9 +6,13 @@ import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 public class SaTokenConfigure implements WebMvcConfigurer {
@@ -16,10 +20,10 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册 Sa-Token 拦截器，校验规则为 StpUtil.checkLogin() 登录校验。
-        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
-                .addPathPatterns("/**")
-                .excludePathPatterns("/sys/login")
-                .excludePathPatterns("/v1/**");
+//        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
+//                .addPathPatterns("/**")
+//                .excludePathPatterns("/sys/login")
+//                .excludePathPatterns("/v1/**");
     }
 
     @Override

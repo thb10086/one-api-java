@@ -7,6 +7,8 @@ import com.tang.core.modules.transfer.model.dto.TransferApiKeysCreateDto;
 import com.tang.core.modules.transfer.model.dto.TransferApiKeysDto;
 import com.tang.core.modules.transfer.model.dto.TransferApiKeysReqDto;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 中转平台API密钥表 服务类
@@ -21,4 +23,5 @@ public interface ITransferApiKeysService extends IService<TransferApiKeys> {
     Boolean deleteTransferApiKeys(Long apiKeyId);
     String getApiKey(Long apiKeyId);
     TransferApiKeys getTransferApiKeysByKey(String apiKey);
+    Boolean updateQuota(Long apiKeyId, BigDecimal quota);
 }

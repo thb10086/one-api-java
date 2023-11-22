@@ -20,4 +20,6 @@ public interface IModelsService extends IService<Models> {
 
     Boolean checkModels(String models);
 
+    ModelsDto getModelByName(String name);
+
 }

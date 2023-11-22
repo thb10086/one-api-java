@@ -1,10 +1,12 @@
 package com.tang.core.modules.api.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.tang.common.annotation.ChannelType;
 import com.tang.common.config.RedisService;
 import com.tang.common.constant.Constants;
 import com.tang.common.enums.ChannelTypeEnums;
 import com.tang.common.enums.StrategyEnums;
+import com.tang.common.utils.BeanUtils;
 import com.tang.common.utils.StringUtils;
 import com.tang.core.config.StrategyContent;
 import com.tang.core.modules.api.chat.ChatCompletion;
@@ -18,7 +20,10 @@ import com.tang.core.modules.api.service.BaseHandleService;
 import com.tang.core.modules.api.strategy.ApiKeyStrategy;
 import com.tang.core.modules.channel.model.dto.ChannelsVo;
 import com.tang.core.modules.platform.model.dto.PlatformApiKeysDto;
+import com.tang.core.modules.transfer.model.TransferApiKeys;
+import com.tang.core.modules.user.model.Users;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -37,8 +42,11 @@ public class OpenAiHandleService implements BaseHandleService {
     @Autowired
     DefaultApiRequest defaultApiRequest;
 
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
+
     @Override
-    public Object completions(ChatCompletion chatCompletion, ChannelsVo channels, String apiKey) {
+    public Object completions(ChatCompletion chatCompletion, ChannelsVo channels, TransferApiKeys transferApiKeys) {
         // 获取渠道中的api keys
         List<PlatformApiKeysDto> apiKeys = channels.getApiKeys();
 
@@ -60,9 +68,8 @@ public class OpenAiHandleService implements BaseHandleService {
         if (chatCompletion.getStream()){
             // 创建SseEmitter
             SseEmitter sseEmitter = new SseEmitter();
-
             // 创建并设置监听器
-            OpenAiListener listener = new OpenAiListener(sseEmitter);
+            OpenAiListener listener = new OpenAiListener(sseEmitter,transferApiKeys.getCreateUserName(),chatCompletion,transferApiKeys,eventPublisher);
 
             // 创建并设置流式请求参数
             StreamRequestParams params = new StreamRequestParams();

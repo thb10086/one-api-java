@@ -3,6 +3,8 @@ package com.tang.core.modules.transfer.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tang.common.config.RedisService;
 import com.tang.common.constant.RedisConstants;
@@ -148,4 +150,25 @@ public class TransferApiKeysServiceImpl extends ServiceImpl<TransferApiKeysMappe
         LambdaQueryWrapper<TransferApiKeys> queryWrapper = new LambdaQueryWrapper<TransferApiKeys>().eq(TransferApiKeys::getApiKey, apiKey);
         return getOne(queryWrapper);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public Boolean updateQuota(Long apiKeyId, BigDecimal quota) {
+        LambdaUpdateWrapper<TransferApiKeys> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper
+                .setSql("quota_used = quota_used + "+quota)
+                .setSql("quota_remaining = quota_remaining - " + quota)
+                .eq(TransferApiKeys::getTransferKeyId, apiKeyId);
+        update(updateWrapper);
+
+        UpdateWrapper<TransferApiKeys> disableWrapper = new UpdateWrapper<>();
+        disableWrapper
+                .set("is_disabled", 1)
+                .eq("transfer_key_id", apiKeyId)
+                .apply("quota_used <= 0");
+        update(disableWrapper);
+        return true;
+    }
+
+
 }

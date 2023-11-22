@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * <p>
@@ -30,5 +31,15 @@ public class ModelsDto implements Serializable {
      * 模型列表
      */
     private String modelType;
+
+    /**
+     * 输入价格
+     */
+    private BigDecimal inputMoney;
+
+    /**
+     * 输出价格
+     */
+    private BigDecimal outputMoney;
 
 }
