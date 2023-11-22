@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class OkHttpClientConfig {
 
-    @Value("${okhttp.connectTimeout:10}")
+    @Value("${okhttp.connectTimeout:1000}")
     private int connectTimeout; // 连接超时时间，默认为10秒
 
     @Value("${okhttp.readTimeout:10}")

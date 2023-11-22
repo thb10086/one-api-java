@@ -3,6 +3,7 @@ package com.tang.core.modules.models.model;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import com.tang.common.domain.BaseEntity;
 import lombok.Getter;
@@ -34,5 +35,15 @@ public class Models extends BaseEntity implements Serializable {
      * 模型列表
      */
     private String modelType;
+
+    /**
+     * 输入价格
+     */
+    private BigDecimal inputMoney;
+
+    /**
+     * 输出价格
+     */
+    private BigDecimal outputMoney;
 
 }

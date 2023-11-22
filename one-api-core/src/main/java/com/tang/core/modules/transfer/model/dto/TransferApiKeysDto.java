@@ -55,6 +55,17 @@ public class TransferApiKeysDto extends BaseEntity implements Serializable {
     private Boolean isDisabled;
 
     /**
+     * 请求次数
+     */
+    private Integer requestCount;
+
+
+    /**
+     * 请求次数限制
+     */
+    private Integer requestLimit;
+
+    /**
      * 已使用额度
      */
     private BigDecimal quotaUsed;

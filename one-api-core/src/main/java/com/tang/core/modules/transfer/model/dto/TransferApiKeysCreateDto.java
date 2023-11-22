@@ -41,6 +41,11 @@ public class TransferApiKeysCreateDto extends BaseEntity implements Serializable
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime expTime;
 
+    /**
+     * 请求次数限制
+     */
+    private Integer requestLimit;
+
     @NotNull(message = "额度不能为空")
     private BigDecimal quota;
 

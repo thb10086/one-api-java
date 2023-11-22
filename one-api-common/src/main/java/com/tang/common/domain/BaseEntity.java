@@ -20,6 +20,13 @@ public class BaseEntity {
      */
     private Boolean delFlag;
 
+
+    /**
+     * 用户名称
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private String createUserName;
+
     /**
      * 版本号
      */

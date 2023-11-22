@@ -2,6 +2,7 @@ package com.tang.core.modules.api.request;
 
 import cn.hutool.http.ContentType;
 import com.alibaba.fastjson.JSON;
+import com.tang.core.modules.api.request.params.StreamRequestParams;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-public class ApiRequest {
+public class StreamApiRequest {
     @Autowired
     OkHttpClient okHttpClient;
 
@@ -26,7 +27,7 @@ public class ApiRequest {
         factory = EventSources.createFactory(okHttpClient);
     }
 
-    public void request(RequestParams params){
+    public void request(StreamRequestParams params){
         Request request = new Request.Builder().url(params.getUrl())
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", "Bearer "+params.getApiKey())

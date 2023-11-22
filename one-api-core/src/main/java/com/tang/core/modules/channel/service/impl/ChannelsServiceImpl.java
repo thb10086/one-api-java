@@ -126,7 +126,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         vo.setChannelName(channels.getChannelName());
         vo.setChannelType(channels.getChannelType());
         vo.setApiKeys(apiKeys);
-        vo.setStrategy(channels.getStrategy());
+        vo.setStrategy(channels.getStrategy()==null?0:channels.getStrategy());
         vo.setModels(models.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
         vo.setGroupIds(groups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
         String jsonObject = JSON.toJSONString(vo);
@@ -245,12 +245,20 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
     }
 
     @Override
-    public Boolean updateChannel() {
+    public Boolean updateChannel(ChannelsDto channelsDto) {
+        //校验数据
+        verifyData(channelsDto);
+
         return null;
     }
 
     @Override
-    public Boolean deleteChannel() {
+    public Boolean deleteChannel(Long channelId) {
+        List<PlatformApiKeysDto> list = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channelId);
+        if (CollectionUtil.isNotEmpty(list)){
+            throw new ServiceException("渠道下已经存在apikey，无法删除！");
+        }
+
         return null;
     }
 
@@ -329,6 +337,22 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
                 .in(Channels::getChannelId, channelIds)
                 .in(BaseEntity::getDelFlag, false);
         return list(queryWrapper);
+    }
+
+    @Override
+    public ChannelsVo queryChannelsById(Long id) {
+        Channels channels = getById(id);
+        if (Objects.isNull(channels)){
+            return new ChannelsVo();
+        }
+        List<PlatformApiKeysDto> apiKeys = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channels.getChannelId());
+        List<ChannelModel> channelModels = iChannelModelService.getChannelModelByChannelId(channels.getChannelId());
+        List<ChannelGroup> channelGroups = iChannelGroupService.getChannelGroupByChannelId(channels.getChannelId());
+        ChannelsVo convert = BeanUtils.convert(channels, ChannelsVo.class);
+        convert.setGroupIds(channelGroups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
+        convert.setModels(channelModels.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
+        convert.setApiKeys(apiKeys);
+        return convert;
     }
 
 }

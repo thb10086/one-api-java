@@ -1,15 +1,15 @@
-package com.tang.core.modules.logs.model;
+package com.tang.core.modules.logs.model.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 import com.tang.common.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -22,7 +22,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName("request_logs")
-public class RequestLogs extends BaseEntity implements Serializable {
+public class RequestLogsDto extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

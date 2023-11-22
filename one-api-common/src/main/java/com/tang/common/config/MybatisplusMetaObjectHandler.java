@@ -1,13 +1,16 @@
 package com.tang.common.config;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.tang.common.utils.BeanUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * 公共字段注入
@@ -24,11 +27,21 @@ public class MybatisplusMetaObjectHandler implements MetaObjectHandler {
             log.trace("MybatisplusMetaObjectHandler...insertFill... {} ",
                     metaObject.getOriginalObject().getClass().getName());
         }
+        Object extra = null;
+        try {
+            extra = StpUtil.getExtra("user");
+        }catch (Exception e){
 
-        // 获取登录登录人信息
-        setFieldValByName("createUserId", StpUtil.getLoginIdAsLong(), metaObject);
-        setFieldValByName("createTime", LocalDateTime.now(), metaObject);
-        setFieldValByName("delFlag", false, metaObject);
+        }finally {
+            if (Objects.nonNull(extra)){
+                // 获取登录登录人信息
+                JSONObject user = BeanUtils.convert(extra, JSONObject.class);
+                setFieldValByName("createUserId", user.get("userId"), metaObject);
+                setFieldValByName("createTime", LocalDateTime.now(), metaObject);
+                setFieldValByName("delFlag", false, metaObject);
+                setFieldValByName("createUserName", user.get("username"), metaObject);
+            }
+        }
     }
 
     @Override

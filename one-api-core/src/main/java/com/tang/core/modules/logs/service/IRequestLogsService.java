@@ -1,7 +1,10 @@
 package com.tang.core.modules.logs.service;
 
+import com.tang.core.modules.api.event.MessageEvent;
 import com.tang.core.modules.logs.model.RequestLogs;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * <p>
@@ -12,5 +15,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2023-11-14
  */
 public interface IRequestLogsService extends IService<RequestLogs> {
+
+    @EventListener(classes = MessageEvent.class)
+    @Async
+    public void saveLog(MessageEvent event);
 
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tang.common.config.RedisService;
 import com.tang.common.constant.RedisConstants;
+import com.tang.common.domain.BaseEntity;
 import com.tang.common.utils.BeanUtils;
 import com.tang.core.modules.models.model.Models;
 import com.tang.core.modules.models.mapper.ModelsMapper;
@@ -60,4 +61,26 @@ public class ModelsServiceImpl extends ServiceImpl<ModelsMapper, Models> impleme
             throw new IllegalArgumentException("输入的模型ID包含非法字符，无法转换为Long类型", e);
         }
     }
+
+    @Override
+    public ModelsDto getModelByName(String name) {
+        List<Models> list = redisService.getCacheList(RedisConstants.CACHE_MODELS);
+        if (CollectionUtil.isEmpty(list)){
+            LambdaQueryWrapper<Models> queryWrapper = new LambdaQueryWrapper<Models>().eq(Models::getModelName, name).eq(BaseEntity::getDelFlag, false);
+            Models models = getBaseMapper().selectOne(queryWrapper);
+            if (models==null){
+                models = redisService.getCacheObject(RedisConstants.CACHE_MODELS_DEFAULT);
+            }
+            return BeanUtils.convert(models,ModelsDto.class);
+        }
+        List<Models> modelsList = list.stream().filter(i -> i.getModelName().equals(name)).collect(Collectors.toList());
+
+        Models models = modelsList.get(0);
+        if (models==null){
+            models = redisService.getCacheObject(RedisConstants.CACHE_MODELS_DEFAULT);
+        }
+        return BeanUtils.convert(models,ModelsDto.class);
+    }
+
+
 }
