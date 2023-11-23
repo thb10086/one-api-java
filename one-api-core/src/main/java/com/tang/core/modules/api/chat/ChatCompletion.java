@@ -3,6 +3,7 @@ package com.tang.core.modules.api.chat;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.Lists;
 import com.tang.core.modules.api.utils.TikTokensUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,5 +44,18 @@ public class ChatCompletion extends BaseChatCompletion implements Serializable {
             return 0;
         }
         return TikTokensUtil.tokens(this.getModel(), this.messages);
+    }
+
+    public static ChatCompletion getDefaultChatCompletion(String model){
+        Message message = new Message();
+        message.setRole("user");
+        message.setContent("回复我一个1");
+        ChatCompletion completion = new ChatCompletion();
+        completion.setModel(model);
+        completion.setMessages(Lists.newArrayList(message));
+        completion.setTemperature(0.5);
+        completion.setPresencePenalty(0);
+        completion.setFrequencyPenalty(0);
+        return completion;
     }
 }

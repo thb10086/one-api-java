@@ -1,6 +1,7 @@
 package com.tang.common.config;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.tang.common.utils.BeanUtils;
@@ -35,8 +36,8 @@ public class MybatisplusMetaObjectHandler implements MetaObjectHandler {
         }finally {
             if (Objects.nonNull(extra)){
                 // 获取登录登录人信息
-                JSONObject user = BeanUtils.convert(extra, JSONObject.class);
-                setFieldValByName("createUserId", user.get("userId"), metaObject);
+                JSONObject user = JSON.parseObject(JSON.toJSONString(extra));
+                setFieldValByName("createUserId", Long.valueOf(user.get("userId").toString()), metaObject);
                 setFieldValByName("createTime", LocalDateTime.now(), metaObject);
                 setFieldValByName("delFlag", false, metaObject);
                 setFieldValByName("createUserName", user.get("username"), metaObject);

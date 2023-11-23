@@ -51,12 +51,17 @@ public class PlatformApiKeys extends BaseEntity implements Serializable {
     /**
      * 响应时间
      */
-    private Integer responseTime;
+    private String responseTime;
 
     /**
      * 是否禁用
      */
     private Boolean isDisabled;
+
+    /**
+     * 备注
+     */
+    private String remake;
 
 
 }

@@ -50,5 +50,10 @@ public class ChannelsController {
         return R.ok(iChannelsService.queryChannel(reqDto));
     }
 
+    @PostMapping("/channel/batchTestApiKey")
+    public R<Boolean> batchTestApiKey(Long channelId){
+        return R.ok(iChannelsService.batchTestApiKey(channelId));
+    }
+
 }
 

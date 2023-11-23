@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import com.tang.common.config.RedisService;
 import com.tang.common.constant.Constants;
 import com.tang.common.constant.RedisConstants;
@@ -13,6 +14,11 @@ import com.tang.common.domain.R;
 import com.tang.common.enums.ChannelTypeEnums;
 import com.tang.common.exception.ServiceException;
 import com.tang.common.utils.BeanUtils;
+import com.tang.core.modules.api.chat.ChatCompletion;
+import com.tang.core.modules.api.chat.ChatCompletionResponse;
+import com.tang.core.modules.api.chat.Message;
+import com.tang.core.modules.api.request.DefaultApiRequest;
+import com.tang.core.modules.api.request.params.DefaultRequestParams;
 import com.tang.core.modules.channel.model.ChannelGroup;
 import com.tang.core.modules.channel.model.ChannelModel;
 import com.tang.core.modules.channel.model.Channels;
@@ -28,6 +34,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tang.core.modules.groups.model.dto.GroupsDto;
 import com.tang.core.modules.groups.service.IGroupsService;
 import com.tang.core.modules.models.service.IModelsService;
+import com.tang.core.modules.platform.model.PlatformApiKeys;
 import com.tang.core.modules.platform.model.dto.PlatformApiKeysDto;
 import com.tang.core.modules.platform.service.IPlatformApiKeysService;
 import com.tang.core.modules.user.model.UserGroup;
@@ -47,6 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -82,6 +91,9 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
 
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    DefaultApiRequest defaultApiRequest;
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -129,8 +141,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         vo.setStrategy(channels.getStrategy()==null?0:channels.getStrategy());
         vo.setModels(models.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
         vo.setGroupIds(groups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
-        String jsonObject = JSON.toJSONString(vo);
-        redisService.setCacheObject(RedisConstants.CACHE_CHANNEL+channels.getChannelId(),jsonObject);
+        redisService.setCacheObject(RedisConstants.CACHE_CHANNEL+channels.getChannelId(),vo);
     }
 
     //保存平台apikey
@@ -341,18 +352,74 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
 
     @Override
     public ChannelsVo queryChannelsById(Long id) {
-        Channels channels = getById(id);
-        if (Objects.isNull(channels)){
-            return new ChannelsVo();
+        ChannelsVo channelsVo;
+        //渠道信息
+        channelsVo = redisService.getCacheObject(RedisConstants.CACHE_CHANNEL + id);
+        if (channelsVo == null) {
+            //从数据库拿渠道数据
+            Channels channels = getById(id);
+            if (Objects.isNull(channels)) {
+                return new ChannelsVo();
+            }
+            List<PlatformApiKeysDto> apiKeys = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channels.getChannelId());
+            List<ChannelModel> channelModels = iChannelModelService.getChannelModelByChannelId(channels.getChannelId());
+            List<ChannelGroup> channelGroups = iChannelGroupService.getChannelGroupByChannelId(channels.getChannelId());
+            channelsVo = BeanUtils.convert(channels, ChannelsVo.class);
+            channelsVo.setGroupIds(channelGroups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
+            channelsVo.setModels(channelModels.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
+            channelsVo.setApiKeys(apiKeys);
+            //重新缓存信息
+            redisService.setCacheObject(RedisConstants.CACHE_CHANNEL + id, channelsVo);
+
         }
-        List<PlatformApiKeysDto> apiKeys = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channels.getChannelId());
-        List<ChannelModel> channelModels = iChannelModelService.getChannelModelByChannelId(channels.getChannelId());
-        List<ChannelGroup> channelGroups = iChannelGroupService.getChannelGroupByChannelId(channels.getChannelId());
-        ChannelsVo convert = BeanUtils.convert(channels, ChannelsVo.class);
-        convert.setGroupIds(channelGroups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
-        convert.setModels(channelModels.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
-        convert.setApiKeys(apiKeys);
-        return convert;
+        return channelsVo;
     }
+
+    @Override
+    public Boolean batchTestApiKey(Long channelId) {
+        Assert.notNull(channelId,"id不能为空");
+        ChannelsVo channelsVo = queryChannelsById(channelId);
+        List<PlatformApiKeysDto> keyList = channelsVo.getApiKeys();
+        if (CollectionUtil.isEmpty(keyList)){
+            return true;
+        }
+        ExecutorService executorService = Executors.newFixedThreadPool(keyList.size());
+        for (PlatformApiKeysDto apikey : keyList) {
+            executorService.execute(()->{
+                DefaultRequestParams params = new DefaultRequestParams();
+                params.setApiKey(apikey.getApiKey());
+                params.setUrl(channelsVo.getProxyAddress()+Constants.DEFAULT_API_URL);
+                params.setChatCompletion(ChatCompletion.getDefaultChatCompletion(Constants.DEFAULT_MODEL));
+                try {
+                    //开始时间
+                    long startTime = System.currentTimeMillis();
+                    //发送请求
+                    defaultApiRequest.request(params);
+                    //结束时间
+                    long endTime = System.currentTimeMillis();
+                    //设置响应时间
+                    apikey.setResponseTime((endTime-startTime)+"ms");
+                    //关闭禁用
+                    apikey.setIsDisabled(false);
+                    //测试成功 通过
+                    apikey.setTestResult("成功");
+                    apikey.setRemake("");
+                    //待修改的apikey
+                }catch (ServiceException e){
+                    apikey.setIsDisabled(true);
+                    apikey.setTestResult("失败");
+                    apikey.setResponseTime("0ms");
+                    //把这个key禁用
+                    apikey.setRemake(e.getMessage());
+                    log.error(e.getMessage());
+                }finally {
+                    //修改缓存跟数据库
+                    iPlatformApiKeysService.updatePlatformApiKeys(apikey,channelsVo);
+                }
+            });
+        }
+        return true;
+    }
+
 
 }

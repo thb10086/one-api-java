@@ -154,20 +154,23 @@ public class TransferApiKeysServiceImpl extends ServiceImpl<TransferApiKeysMappe
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean updateQuota(Long apiKeyId, BigDecimal quota) {
+        //给渠道key减额度，增加请求次数。
         LambdaUpdateWrapper<TransferApiKeys> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper
                 .setSql("quota_used = quota_used + "+quota)
                 .setSql("quota_remaining = quota_remaining - " + quota)
+                .setSql("request_count = request_count + 1")
                 .eq(TransferApiKeys::getTransferKeyId, apiKeyId);
         update(updateWrapper);
-
-        UpdateWrapper<TransferApiKeys> disableWrapper = new UpdateWrapper<>();
-        disableWrapper
-                .set("is_disabled", 1)
-                .eq("transfer_key_id", apiKeyId)
-                .apply("quota_used <= 0");
-        update(disableWrapper);
         return true;
+//        //如果有key额度为0，将这个key禁用掉 //TODO 暂不限制
+//        UpdateWrapper<TransferApiKeys> disableWrapper = new UpdateWrapper<>();
+//        disableWrapper
+//                .set("is_disabled", 1)
+//                .eq("transfer_key_id", apiKeyId)
+//                .apply("quota_used <= 0");
+//        update(disableWrapper);
+//        return true;
     }
 
 

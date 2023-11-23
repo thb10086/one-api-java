@@ -59,4 +59,11 @@ public interface IChannelsService extends IService<Channels> {
      */
     ChannelsVo queryChannelsById(Long id);
 
+    /**
+     * 批量测试渠道下所有key
+     * @param channelId
+     * @return
+     */
+    Boolean batchTestApiKey(Long channelId);
+
 }
