@@ -69,7 +69,7 @@ public class OpenAiHandleService implements BaseHandleService {
             // 创建SseEmitter
             SseEmitter sseEmitter = new SseEmitter();
             // 创建并设置监听器
-            OpenAiListener listener = new OpenAiListener(sseEmitter,transferApiKeys.getCreateUserName(),chatCompletion,transferApiKeys,eventPublisher);
+            OpenAiListener listener = new OpenAiListener(sseEmitter,requestApiKey,chatCompletion,transferApiKeys,eventPublisher);
 
             // 创建并设置流式请求参数
             StreamRequestParams params = new StreamRequestParams();

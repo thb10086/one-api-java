@@ -1,5 +1,6 @@
 package com.tang.core.modules.channel.model.dto;
 
+import com.tang.core.modules.platform.model.dto.PlatformApiKeysDto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * <p>
@@ -62,7 +64,7 @@ public class ChannelsDto implements Serializable {
     /**
      * api-keys
      */
-    private String apiKeys;
+    private List<PlatformApiKeysDto> apiKeys;
 
     /**
      * api-key csv文件解析

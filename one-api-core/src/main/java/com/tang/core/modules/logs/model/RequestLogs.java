@@ -57,6 +57,11 @@ public class RequestLogs extends BaseEntity implements Serializable {
     private Integer inputTokens;
 
     /**
+     * 请求状态
+     */
+    private Boolean requestStatus;
+
+    /**
      * 输出的token数
      */
     private Integer outputTokens;
@@ -65,5 +70,7 @@ public class RequestLogs extends BaseEntity implements Serializable {
      * 使用的额度
      */
     private BigDecimal quotaConsumed;
+
+    private String remake;
 
 }

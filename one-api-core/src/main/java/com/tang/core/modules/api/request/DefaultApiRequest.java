@@ -27,7 +27,7 @@ public class DefaultApiRequest extends BaseApiRequest{
             ChatCompletionResponse chatCompletionResponse = JSON.parseObject(response.body().string(), ChatCompletionResponse.class);
             response.close();
             return chatCompletionResponse;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ServiceException(OpenAIErrorEnums.ERROR_306);
         }
     }

@@ -163,14 +163,6 @@ public class TransferApiKeysServiceImpl extends ServiceImpl<TransferApiKeysMappe
                 .eq(TransferApiKeys::getTransferKeyId, apiKeyId);
         update(updateWrapper);
         return true;
-//        //如果有key额度为0，将这个key禁用掉 //TODO 暂不限制
-//        UpdateWrapper<TransferApiKeys> disableWrapper = new UpdateWrapper<>();
-//        disableWrapper
-//                .set("is_disabled", 1)
-//                .eq("transfer_key_id", apiKeyId)
-//                .apply("quota_used <= 0");
-//        update(disableWrapper);
-//        return true;
     }
 
 

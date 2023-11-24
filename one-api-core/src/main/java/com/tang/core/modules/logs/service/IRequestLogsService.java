@@ -1,5 +1,6 @@
 package com.tang.core.modules.logs.service;
 
+import com.tang.core.modules.api.event.ErrorMessageEvent;
 import com.tang.core.modules.api.event.MessageEvent;
 import com.tang.core.modules.logs.model.RequestLogs;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -19,5 +20,9 @@ public interface IRequestLogsService extends IService<RequestLogs> {
     @EventListener(classes = MessageEvent.class)
     @Async
     public void saveLog(MessageEvent event);
+
+    @EventListener(classes = ErrorMessageEvent.class)
+    @Async
+    public void saveErrorLog(ErrorMessageEvent event);
 
 }

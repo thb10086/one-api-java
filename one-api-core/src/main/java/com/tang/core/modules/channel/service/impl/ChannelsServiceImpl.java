@@ -43,6 +43,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,7 +103,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         verifyData(channelsDto);
 
         //获取api-key
-        List<String> apiKeyList = getApiKeyList(channelsDto);
+        List<PlatformApiKeysDto> apiKeyList = getApiKeyList(channelsDto);
 
         //获取模型id集合
         List<Long> modelIdList = getModelIdList(channelsDto);
@@ -145,16 +146,16 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
     }
 
     //保存平台apikey
-    List<PlatformApiKeysDto> savePlatformApiKeys(Long channelId,List<String> apiKeyList){
-        List<PlatformApiKeysDto> list = apiKeyList.stream()
-                .map(apiKey -> {
-                    PlatformApiKeysDto dto = new PlatformApiKeysDto();
-                    dto.setChannelId(channelId);
-                    dto.setApiKey(apiKey);
-                    return dto;
-                }).collect(Collectors.toList());
-        iPlatformApiKeysService.createPlatformApiKeysList(list);
-        return list;
+    List<PlatformApiKeysDto> savePlatformApiKeys(Long channelId,List<PlatformApiKeysDto> apiKeyList){
+        apiKeyList.forEach(i->{
+            i.setChannelId(channelId);
+            i.setIsDisabled(false);
+            i.setDelFlag(false);
+            i.setTestResult("");
+            i.setResponseTime("");
+        });
+        iPlatformApiKeysService.createPlatformApiKeysList(apiKeyList);
+        return apiKeyList;
     }
 
     //保存渠道关联模型
@@ -189,21 +190,22 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         return Arrays.stream(channelsDto.getGroupId().split(",")).map(i->Long.valueOf(i)).collect(Collectors.toList());
     }
 
-    List<String> getApiKeyList(ChannelsDto channelsDto){
+    List<PlatformApiKeysDto> getApiKeyList(ChannelsDto channelsDto){
         //获取字符串分割或者回车分割的api-key数据
-        List<String> strApiKeys = analysisApiKeys(channelsDto.getApiKeys());
+        List<PlatformApiKeysDto> dtoList = channelsDto.getApiKeys();
+
         //获取csv文件中的数据
-        List<String> csvApiKeys = analysisApiKeysByCsv(channelsDto.getCsvFile());
+        List<PlatformApiKeysDto> csvApiKeys = analysisApiKeysByCsv(channelsDto.getCsvFile());
         //合并api-key数据
-        List<String> apiKeys = Stream.of(Optional.ofNullable(strApiKeys), Optional.ofNullable(csvApiKeys))
+        List<PlatformApiKeysDto> list = Stream.of(Optional.ofNullable(dtoList), Optional.ofNullable(csvApiKeys))
                 .flatMap(opt -> opt.map(Collection::stream).orElseGet(Stream::empty))
                 .collect(Collectors.toList());
-        return apiKeys;
+        return list;
     }
 
     void verifyData(ChannelsDto channelsDto){
         Assert.isTrue(ChannelTypeEnums.byI(channelsDto.getChannelType()),"渠道类型不存在！");
-        Assert.isTrue(StringUtils.hasText(channelsDto.getApiKeys())||channelsDto.getCsvFile()!=null,"请传入api-key");
+        Assert.isTrue(CollectionUtil.isNotEmpty(channelsDto.getApiKeys())||channelsDto.getCsvFile()!=null,"请传入api-key");
         //检查模型列表是否正确。
         Assert.isTrue(iModelsService.checkModels(channelsDto.getModels()),"不存在的模型");
         Assert.isTrue(iGroupsService.checkGroups(channelsDto.getGroupId()),"不存在的分组");
@@ -212,7 +214,24 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         }
     }
 
-    public List<String> analysisApiKeysByCsv(MultipartFile csvFile){
+    void verifyUpdateData(ChannelsDto channelsDto){
+        if (channelsDto.getChannelType()!=null){
+            Assert.isTrue(ChannelTypeEnums.byI(channelsDto.getChannelType()),"渠道类型不存在！");
+        }
+
+        if (StringUtils.hasText(channelsDto.getModels())){
+            Assert.isTrue(iModelsService.checkModels(channelsDto.getModels()),"不存在的模型");
+        }
+        if (StringUtils.hasText(channelsDto.getGroupId())){
+            Assert.isTrue(iGroupsService.checkGroups(channelsDto.getGroupId()),"不存在的分组");
+        }
+        //检查模型列表是否正确。
+        if (StringUtils.hasText(channelsDto.getProxyAddress())){
+            Assert.isTrue(channelsDto.getProxyAddress().matches(Constants.URL_PATTERN),"代理地址格式不正确");
+        }
+    }
+
+    public List<PlatformApiKeysDto> analysisApiKeysByCsv(MultipartFile csvFile){
         if (csvFile==null){
             return null;
         }
@@ -234,38 +253,63 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
             e.printStackTrace();
             throw new ServiceException("csv文件读取异常！",500);
         }
-        return list;
+        return list.stream().map(key->{
+            PlatformApiKeysDto dto = new PlatformApiKeysDto();
+            dto.setApiKey(key);
+            dto.setWeight(0);
+            dto.setIsDisabled(false);
+            return dto;
+        }).collect(Collectors.toList());
     }
 
-    /**
-     * 解析apikey
-     * @param apiKeys
-     * @return
-     */
-    public List<String> analysisApiKeys(String apiKeys){
-        if (!StringUtils.hasText(apiKeys)){
-            return null;
-        }
-        //先根据逗号分割
-        List<String> apiKeyList = Arrays.stream(apiKeys.split(",")).collect(Collectors.toList());
-        //不行的话再用回车进行分割
-        if (CollectionUtil.isEmpty(apiKeyList)){
-            apiKeyList = Arrays.stream(apiKeys.split("\\n")).collect(Collectors.toList());
-        }
-        return apiKeyList;
-    }
+//    /**
+//     * 解析apikey
+//     * @param apiKeys
+//     * @return
+//     */
+//    public List<String> analysisApiKeys(String apiKeys){
+//        if (!StringUtils.hasText(apiKeys)){
+//            return null;
+//        }
+//        //先根据逗号分割
+//        List<String> apiKeyList = Arrays.stream(apiKeys.split(",")).collect(Collectors.toList());
+//        //不行的话再用回车进行分割
+//        if (CollectionUtil.isEmpty(apiKeyList)){
+//            apiKeyList = Arrays.stream(apiKeys.split("\\n")).collect(Collectors.toList());
+//        }
+//        return apiKeyList;
+//    }
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public Boolean updateChannel(ChannelsDto channelsDto) {
+        Assert.notNull(channelsDto.getChannelId(),"渠道id不能为空");
         //校验数据
-        verifyData(channelsDto);
+        verifyUpdateData(channelsDto);
+        Channels convert = BeanUtils.convert(channelsDto, Channels.class);
+        update(convert,new LambdaQueryWrapper<Channels>().eq(Channels::getChannelId,channelsDto.getChannelId()));
+        if (StringUtils.hasText(channelsDto.getModels())){
+            iChannelModelService.deleteChannelModel(channelsDto.getChannelId());
+            List<Long> modelIdList = getModelIdList(channelsDto);
+            saveChannelsModel(channelsDto.getChannelId(), modelIdList);
+        }
+        if (StringUtils.hasText(channelsDto.getGroupId())){
+            iChannelGroupService.deleteChannelGroup(channelsDto.getChannelId());
+            List<Long> groupIdList = getGroupIdList(channelsDto);
+            saveChannelsGroup(channelsDto.getChannelId(),groupIdList);
+        }
+//        if (channelsDto.getCsvFile()!=null||StringUtils.hasText(channelsDto.getApiKeys())){
+//            List<String> apiKeyList = getApiKeyList(channelsDto);
+//
+//        }
 
+        //TODO
         return null;
     }
 
     @Override
     public Boolean deleteChannel(Long channelId) {
-        List<PlatformApiKeysDto> list = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channelId);
+        List<PlatformApiKeysDto> list = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channelId,StpUtil.getLoginIdAsLong());
         if (CollectionUtil.isNotEmpty(list)){
             throw new ServiceException("渠道下已经存在apikey，无法删除！");
         }
@@ -361,7 +405,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
             if (Objects.isNull(channels)) {
                 return new ChannelsVo();
             }
-            List<PlatformApiKeysDto> apiKeys = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channels.getChannelId());
+            List<PlatformApiKeysDto> apiKeys = iPlatformApiKeysService.getPlatformApiKeysByChannelId(channels.getChannelId(),channels.getCreateUserId());
             List<ChannelModel> channelModels = iChannelModelService.getChannelModelByChannelId(channels.getChannelId());
             List<ChannelGroup> channelGroups = iChannelGroupService.getChannelGroupByChannelId(channels.getChannelId());
             channelsVo = BeanUtils.convert(channels, ChannelsVo.class);
@@ -386,39 +430,53 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         ExecutorService executorService = Executors.newFixedThreadPool(keyList.size());
         for (PlatformApiKeysDto apikey : keyList) {
             executorService.execute(()->{
-                DefaultRequestParams params = new DefaultRequestParams();
-                params.setApiKey(apikey.getApiKey());
-                params.setUrl(channelsVo.getProxyAddress()+Constants.DEFAULT_API_URL);
-                params.setChatCompletion(ChatCompletion.getDefaultChatCompletion(Constants.DEFAULT_MODEL));
-                try {
-                    //开始时间
-                    long startTime = System.currentTimeMillis();
-                    //发送请求
-                    defaultApiRequest.request(params);
-                    //结束时间
-                    long endTime = System.currentTimeMillis();
-                    //设置响应时间
-                    apikey.setResponseTime((endTime-startTime)+"ms");
-                    //关闭禁用
-                    apikey.setIsDisabled(false);
-                    //测试成功 通过
-                    apikey.setTestResult("成功");
-                    apikey.setRemake("");
-                    //待修改的apikey
-                }catch (ServiceException e){
-                    apikey.setIsDisabled(true);
-                    apikey.setTestResult("失败");
-                    apikey.setResponseTime("0ms");
-                    //把这个key禁用
-                    apikey.setRemake(e.getMessage());
-                    log.error(e.getMessage());
-                }finally {
-                    //修改缓存跟数据库
-                    iPlatformApiKeysService.updatePlatformApiKeys(apikey,channelsVo);
-                }
+                testRequest(apikey,channelsVo);
             });
         }
         return true;
+    }
+
+    @Override
+    public Boolean testApiKey(Long apiKeyId) {
+        PlatformApiKeys apiKeys = iPlatformApiKeysService.getById(apiKeyId);
+        Assert.notNull(apiKeys,"apikey不存在!");
+        ChannelsVo channelsVo = queryChannelsById(apiKeys.getChannelId());
+        PlatformApiKeysDto convert = BeanUtils.convert(apiKeys, PlatformApiKeysDto.class);
+        testRequest(convert,channelsVo);
+        return true;
+    }
+
+    public void testRequest(PlatformApiKeysDto apikey,ChannelsVo channelsVo){
+        DefaultRequestParams params = new DefaultRequestParams();
+        params.setApiKey(apikey.getApiKey());
+        params.setUrl(channelsVo.getProxyAddress()+Constants.DEFAULT_API_URL);
+        params.setChatCompletion(ChatCompletion.getDefaultChatCompletion(Constants.DEFAULT_MODEL));
+        try {
+            //开始时间
+            long startTime = System.currentTimeMillis();
+            //发送请求
+            defaultApiRequest.request(params);
+            //结束时间
+            long endTime = System.currentTimeMillis();
+            //设置响应时间
+            apikey.setResponseTime((endTime-startTime)+"ms");
+            //关闭禁用
+            apikey.setIsDisabled(false);
+            //测试成功 通过
+            apikey.setTestResult("成功");
+            apikey.setRemake("");
+            //待修改的apikey
+        }catch (ServiceException e){
+            apikey.setIsDisabled(true);
+            apikey.setTestResult("失败");
+            apikey.setResponseTime("0ms");
+            //把这个key禁用
+            apikey.setRemake(e.getMessage());
+            log.error(e.getMessage());
+        }finally {
+            //修改缓存跟数据库
+            iPlatformApiKeysService.updatePlatformApiKeys(apikey,channelsVo);
+        }
     }
 
 

@@ -56,6 +56,8 @@ public class RequestLogsDto extends BaseEntity implements Serializable {
      */
     private Integer inputTokens;
 
+    private Boolean requestStatus;
+
     /**
      * 输出的token数
      */
@@ -65,5 +67,7 @@ public class RequestLogsDto extends BaseEntity implements Serializable {
      * 使用的额度
      */
     private BigDecimal quotaConsumed;
+
+    private String remake;
 
 }

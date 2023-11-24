@@ -5,8 +5,11 @@ import com.google.common.collect.Lists;
 import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.api.chat.ChatCompletionResponse;
 import com.tang.core.modules.api.chat.Message;
+import com.tang.core.modules.api.event.ErrorMessageEvent;
 import com.tang.core.modules.api.event.MessageEvent;
 import com.tang.core.modules.api.utils.TikTokensUtil;
+import com.tang.core.modules.channel.model.dto.ChannelsVo;
+import com.tang.core.modules.channel.service.IChannelsService;
 import com.tang.core.modules.logs.model.RequestLogs;
 import com.tang.core.modules.logs.mapper.RequestLogsMapper;
 import com.tang.core.modules.logs.model.dto.RequestLogsEvent;
@@ -14,6 +17,7 @@ import com.tang.core.modules.logs.service.IRequestLogsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tang.core.modules.models.model.dto.ModelsDto;
 import com.tang.core.modules.models.service.IModelsService;
+import com.tang.core.modules.platform.service.IPlatformApiKeysService;
 import com.tang.core.modules.transfer.model.TransferApiKeys;
 import com.tang.core.modules.transfer.service.ITransferApiKeysService;
 import com.tang.core.modules.user.model.Users;
@@ -21,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -37,7 +42,13 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
     ITransferApiKeysService iTransferApiKeysService;
 
     @Autowired
+    IPlatformApiKeysService iPlatformApiKeysService;
+
+    @Autowired
     IModelsService iModelsService;
+
+    @Autowired
+    IChannelsService channelsService;
 
     @Override
     public void saveLog(MessageEvent event) {
@@ -56,6 +67,8 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         logs.setApiKeyId(event.getApiKeys().getTransferKeyId());
         //用户名称
         logs.setUserName(event.getUserName());
+        //请求状态
+        logs.setRequestStatus(true);
         //密钥的名称
         logs.setKeyName(event.getApiKeys().getKeyName());
         //输入金额
@@ -66,6 +79,24 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         save(logs);
         //去扣这个key的额度
         iTransferApiKeysService.updateQuota(event.getApiKeys().getTransferKeyId(),logs.getQuotaConsumed());
+    }
+
+    @Override
+    public void saveErrorLog(ErrorMessageEvent event) {
+        RequestLogs logs = new RequestLogs();
+        logs.setRequestStatus(false);
+        logs.setRequestTime(LocalDateTime.now());
+        logs.setInputTokens(0);
+        logs.setOutputTokens(0);
+        logs.setApiKeyId(event.getTransferApiKeys().getTransferKeyId());
+        logs.setUserName(event.getUserName());
+        logs.setQuotaConsumed(BigDecimal.ZERO);
+        logs.setKeyName(event.getTransferApiKeys().getKeyName());
+        logs.setRemake(event.getMessage());
+        save(logs);
+        ChannelsVo channelsVo = channelsService.queryChannelsById(event.getApiKeys().getChannelId());
+        event.getApiKeys().setIsDisabled(true);
+        iPlatformApiKeysService.updatePlatformApiKeys(event.getApiKeys(),channelsVo);
     }
 
 

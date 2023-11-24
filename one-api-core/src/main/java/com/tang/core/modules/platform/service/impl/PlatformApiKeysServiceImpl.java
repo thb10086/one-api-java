@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Map;
@@ -37,10 +38,10 @@ public class PlatformApiKeysServiceImpl extends ServiceImpl<PlatformApiKeysMappe
     RedisService redisService;
 
     @Override
-    public List<PlatformApiKeysDto> getPlatformApiKeysByChannelId(Long channelId) {
+    public List<PlatformApiKeysDto> getPlatformApiKeysByChannelId(Long channelId,Long createUserId) {
         LambdaQueryWrapper<PlatformApiKeys> queryWrapper = new LambdaQueryWrapper<PlatformApiKeys>()
                 .eq(PlatformApiKeys::getChannelId, channelId)
-                .eq(BaseEntity::getCreateUserId, StpUtil.getLoginId())
+                .eq(BaseEntity::getCreateUserId, createUserId)
                 .eq(BaseEntity::getDelFlag, false)
                 .orderByDesc(BaseEntity::getCreateTime);
         return BeanUtils.convert(list(queryWrapper),PlatformApiKeysDto.class);
@@ -56,15 +57,8 @@ public class PlatformApiKeysServiceImpl extends ServiceImpl<PlatformApiKeysMappe
         return BeanUtils.convert(list(queryWrapper),PlatformApiKeysDto.class);
     }
 
-    @Override
-    public Boolean batchTestApiKey(Long channelId) {
-        return null;
-    }
 
-    @Override
-    public Boolean testApiKey(Long apiKeyId) {
-        return null;
-    }
+
 
     @Override
     public Boolean createPlatformApiKeys(PlatformApiKeysDto platformApiKeys) {

@@ -7,6 +7,8 @@ import com.tang.core.modules.channel.model.dto.ChannelsDto;
 import com.tang.core.modules.channel.model.dto.ChannelsReqDto;
 import com.tang.core.modules.channel.model.dto.ChannelsResponseDto;
 import com.tang.core.modules.channel.model.dto.ChannelsVo;
+import com.tang.core.modules.platform.model.PlatformApiKeys;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -65,5 +67,12 @@ public interface IChannelsService extends IService<Channels> {
      * @return
      */
     Boolean batchTestApiKey(Long channelId);
+
+    /**
+     * 测试单个key
+     * @param apiKeyId
+     * @return
+     */
+    Boolean testApiKey(Long apiKeyId);
 
 }

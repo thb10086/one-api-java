@@ -22,7 +22,7 @@ public interface IPlatformApiKeysService extends IService<PlatformApiKeys> {
      * @param channelId
      * @return
      */
-    List<PlatformApiKeysDto> getPlatformApiKeysByChannelId(Long channelId);
+    List<PlatformApiKeysDto> getPlatformApiKeysByChannelId(Long channelId,Long createUserId);
 
 
     /**
@@ -32,19 +32,6 @@ public interface IPlatformApiKeysService extends IService<PlatformApiKeys> {
      */
     List<PlatformApiKeysDto> getPlatformApiKeysByChannelIds(List<Long> channelIds);
 
-    /**
-     * 批量测试apikey
-     * @param channelId
-     * @return
-     */
-    Boolean batchTestApiKey(Long channelId);
-
-    /**
-     * 根据apiKeyId测试
-     * @param apiKeyId
-     * @return
-     */
-    Boolean testApiKey(Long apiKeyId);
 
     /**
      * 创建平台apikey
