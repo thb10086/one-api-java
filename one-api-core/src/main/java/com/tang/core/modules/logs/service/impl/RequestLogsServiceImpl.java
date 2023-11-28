@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * <p>
@@ -57,8 +58,12 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         //输入对象
         ChatCompletion completion = event.getCompletion();
         //模型信息
-        ModelsDto model = iModelsService.getModelByName(completion.getModel());
+        ModelsDto model = iModelsService.getModelByName(completion.getModel(),event.getUserId());
+        if (Objects.isNull(model)){
+            model = iModelsService.getDefaultModel();
+        }
         RequestLogs logs = new RequestLogs();
+        logs.setRequestModel(model.getModelName());
         //输出tokens计算
         logs.setOutputTokens(TikTokensUtil.tokens(response.getModel(), Lists.newArrayList(response.getChoices().get(0).getMessage())));
         //输入tokens计算
@@ -75,7 +80,7 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         BigDecimal inputMoney = model.getInputMoney().multiply(new BigDecimal(logs.getInputTokens()).divide(new BigDecimal("1000"),BigDecimal.ROUND_HALF_UP,3));
         //输出金额
         BigDecimal outputMoney = model.getOutputMoney().multiply(new BigDecimal(logs.getOutputTokens()).divide(new BigDecimal("1000"),BigDecimal.ROUND_HALF_UP,3));
-        logs.setQuotaConsumed(inputMoney.add(outputMoney));
+        logs.setQuotaConsumed(inputMoney.add(outputMoney).multiply(model.getMagnification()==null?new BigDecimal("1"):model.getMagnification()));
         save(logs);
         //去扣这个key的额度
         iTransferApiKeysService.updateQuota(event.getApiKeys().getTransferKeyId(),logs.getQuotaConsumed());

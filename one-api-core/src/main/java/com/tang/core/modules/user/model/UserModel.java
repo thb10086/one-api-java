@@ -1,8 +1,12 @@
 package com.tang.core.modules.user.model;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.math.BigDecimal;
+
+import com.tang.common.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,9 +21,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName("user_model")
-public class UserModel implements Serializable {
+public class UserModel extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @TableId(value = "user_model_id", type = IdType.AUTO)
+    private Long userModelId;
 
     private Long userId;
 
@@ -32,6 +39,16 @@ public class UserModel implements Serializable {
      * 倍率
      */
     private BigDecimal magnification;
+
+    /**
+     * 输出金额
+     */
+    private BigDecimal outputMoney;
+
+    /**
+     * 输入金额
+     */
+    private BigDecimal inputMoney;
 
 
 }

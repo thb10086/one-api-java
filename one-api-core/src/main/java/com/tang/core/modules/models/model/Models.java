@@ -36,14 +36,4 @@ public class Models extends BaseEntity implements Serializable {
      */
     private String modelType;
 
-    /**
-     * 输入价格
-     */
-    private BigDecimal inputMoney;
-
-    /**
-     * 输出价格
-     */
-    private BigDecimal outputMoney;
-
 }

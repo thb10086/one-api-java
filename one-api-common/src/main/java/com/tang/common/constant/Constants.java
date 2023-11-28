@@ -152,6 +152,9 @@ public class Constants
 
     public static final String URL_PATTERN ="^(http://|https://)?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}(/.*)?$";
 
+    public static final String DEFAULT_REQUEST ="default_request";
+
+    public static final String DEFAULT_MODEL_PRICE ="default_model_price";
 
 
 }

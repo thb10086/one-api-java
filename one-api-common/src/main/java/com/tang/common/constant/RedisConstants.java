@@ -16,4 +16,7 @@ public class RedisConstants
 
     public final static String CACHE_MODELS_DEFAULT = "cache:channel:default";
 
+    public final static String CACHE_SYS_CONFIG = "cache:sys:config";
+
+    public final static String CACHE_MODEL_USER = "cache:model:user:";
 }

@@ -48,5 +48,10 @@ public class ChannelsVo {
      */
     private List<PlatformApiKeysDto> apiKeys;
 
+    /**
+     * 创建人id
+     */
+    private Long createUserId;
+
 
 }

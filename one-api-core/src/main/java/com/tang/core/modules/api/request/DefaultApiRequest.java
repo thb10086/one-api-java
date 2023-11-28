@@ -6,11 +6,13 @@ import com.tang.common.enums.OpenAIErrorEnums;
 import com.tang.common.exception.ServiceException;
 import com.tang.core.modules.api.chat.ChatCompletionResponse;
 import com.tang.core.modules.api.request.params.DefaultRequestParams;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class DefaultApiRequest extends BaseApiRequest{
     public ChatCompletionResponse request(DefaultRequestParams params) {
         Request request = new Request.Builder().url(params.getUrl())
@@ -20,9 +22,11 @@ public class DefaultApiRequest extends BaseApiRequest{
                 .build();
         try {
             Response response = okHttpClient.newCall(request).execute();
-            OpenAIErrorEnums errorEnum = OpenAIErrorEnums.byI(response.code());
-            if (errorEnum != null) {
-                throw new ServiceException(errorEnum);
+            if (response.code()!=200){
+                OpenAIErrorEnums errorEnum = OpenAIErrorEnums.byI(response.code());
+                if (errorEnum != null) {
+                    throw new ServiceException(errorEnum);
+                }
             }
             ChatCompletionResponse chatCompletionResponse = JSON.parseObject(response.body().string(), ChatCompletionResponse.class);
             response.close();

@@ -19,6 +19,7 @@ import com.tang.core.modules.api.request.params.StreamRequestParams;
 import com.tang.core.modules.api.service.BaseHandleService;
 import com.tang.core.modules.api.strategy.ApiKeyStrategy;
 import com.tang.core.modules.channel.model.dto.ChannelsVo;
+import com.tang.core.modules.models.service.IModelsService;
 import com.tang.core.modules.platform.model.dto.PlatformApiKeysDto;
 import com.tang.core.modules.transfer.model.TransferApiKeys;
 import com.tang.core.modules.user.model.Users;
@@ -38,6 +39,9 @@ public class OpenAiHandleService implements BaseHandleService {
 
     @Autowired
     StreamApiRequest apiRequest;
+
+    @Autowired
+    IModelsService iModelsService;
 
     @Autowired
     DefaultApiRequest defaultApiRequest;
@@ -64,12 +68,14 @@ public class OpenAiHandleService implements BaseHandleService {
         // 设置请求的URL
         String url = channels.getProxyAddress() + Constants.DEFAULT_API_URL;
 
+
+
         // 判断是否要进行流式请求
         if (chatCompletion.getStream()){
             // 创建SseEmitter
             SseEmitter sseEmitter = new SseEmitter();
             // 创建并设置监听器
-            OpenAiListener listener = new OpenAiListener(sseEmitter,requestApiKey,chatCompletion,transferApiKeys,eventPublisher);
+            OpenAiListener listener = new OpenAiListener(sseEmitter,channels,requestApiKey,chatCompletion,transferApiKeys,eventPublisher);
 
             // 创建并设置流式请求参数
             StreamRequestParams params = new StreamRequestParams();

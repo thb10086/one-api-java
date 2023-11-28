@@ -6,6 +6,8 @@ import com.tang.common.config.RedisService;
 import com.tang.common.constant.Constants;
 import com.tang.common.constant.RedisConstants;
 import com.tang.common.domain.BaseEntity;
+import com.tang.core.modules.config.model.SysConfig;
+import com.tang.core.modules.config.service.ISysConfigService;
 import com.tang.core.modules.models.model.Models;
 import com.tang.core.modules.models.service.IModelsService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +17,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -27,23 +31,14 @@ public class RedisLoadConfig implements ApplicationListener<ApplicationReadyEven
     @Autowired
     RedisService redisService;
 
+    @Autowired
+    ISysConfigService iSysConfigService;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent  event) {
         log.info("------redis数据加载中------");
-        List cacheList = redisService.getCacheList(RedisConstants.CACHE_MODELS);
-        if (CollectionUtil.isEmpty(cacheList)){
-           List<Models> list = iModelsService.list();
-            log.info(list.toString());
-            redisService.setCacheList(RedisConstants.CACHE_MODELS,list);
-        }
-
-        Object object = redisService.getCacheObject(RedisConstants.CACHE_MODELS_DEFAULT);
-        if (object==null){
-            Models models = iModelsService.getOne(new LambdaQueryWrapper<Models>().eq(Models::getModelName, Constants.DEFAULT_MODEL).eq(BaseEntity::getDelFlag, false));
-            if (models==null){
-                log.error("获取默认模型失败");
-            }
-            redisService.setCacheObject(RedisConstants.CACHE_MODELS_DEFAULT,models);
-        }
+        List<SysConfig> list = iSysConfigService.list(new LambdaQueryWrapper<SysConfig>().eq(BaseEntity::getDelFlag, false));
+        Map<String, String> configMap = list.stream().collect(Collectors.toMap(SysConfig::getSysCode, SysConfig::getSysValue));
+        redisService.setCacheMap(RedisConstants.CACHE_SYS_CONFIG,configMap);
     }
 }

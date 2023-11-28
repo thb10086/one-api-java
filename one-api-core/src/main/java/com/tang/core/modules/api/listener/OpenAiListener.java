@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.tang.common.enums.OpenAIErrorEnums;
+import com.tang.common.evnet.ExceptionHandlerEvent;
 import com.tang.common.exception.OpenAIRequestException;
 import com.tang.common.exception.OpenaiError;
 import com.tang.core.modules.api.chat.ChatChoice;
@@ -13,6 +14,7 @@ import com.tang.core.modules.api.chat.Message;
 import com.tang.core.modules.api.common.Choice;
 import com.tang.core.modules.api.event.ErrorMessageEvent;
 import com.tang.core.modules.api.event.MessageEvent;
+import com.tang.core.modules.channel.model.dto.ChannelsVo;
 import com.tang.core.modules.platform.model.dto.PlatformApiKeysDto;
 import com.tang.core.modules.transfer.model.TransferApiKeys;
 import com.tang.core.modules.user.model.Users;
@@ -27,6 +29,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 public class OpenAiListener extends EventSourceListener {
@@ -40,11 +43,13 @@ public class OpenAiListener extends EventSourceListener {
     private String finishReason;
     private ApplicationEventPublisher eventPublisher;
     private TransferApiKeys apiKeys;
-    public OpenAiListener(SseEmitter sseEmitter, PlatformApiKeysDto platformApiKeysDto, ChatCompletion chatCompletion, TransferApiKeys apiKeys, ApplicationEventPublisher eventPublisher){
+    private ChannelsVo channelsVo;
+    public OpenAiListener(SseEmitter sseEmitter, ChannelsVo channelsVo,PlatformApiKeysDto platformApiKeysDto, ChatCompletion chatCompletion, TransferApiKeys apiKeys, ApplicationEventPublisher eventPublisher){
         this.sseEmitter = sseEmitter;
         this.chatCompletion=chatCompletion;
         this.platformApiKeysDto=platformApiKeysDto;
         this.apiKeys=apiKeys;
+        this.channelsVo = channelsVo;
         this.eventPublisher=eventPublisher;
     }
     @Override
@@ -58,7 +63,7 @@ public class OpenAiListener extends EventSourceListener {
         choice.setFinishReason(finishReason);
         chatCompletionResponse.setChoices(Lists.newArrayList(choice));
         //发送消息给日志
-        eventPublisher.publishEvent(new MessageEvent(this,chatCompletionResponse,chatCompletion,apiKeys.getCreateUserName(),apiKeys));
+        eventPublisher.publishEvent(new MessageEvent(this,chatCompletionResponse,chatCompletion,apiKeys.getCreateUserName(),channelsVo.getCreateUserId(),apiKeys));
         sseEmitter.complete();
         log.info("关闭连接");
         chatCompletionResponse = null;
@@ -108,30 +113,34 @@ public class OpenAiListener extends EventSourceListener {
     public void onFailure(@NotNull EventSource eventSource, @Nullable Throwable t, @Nullable Response response) {
         // 打印日志
         log.info("连接异常");
-
         OpenAIErrorEnums errorEnums;
+        Optional<SseEmitter> emitter = Optional.ofNullable(this.sseEmitter);
 
         // 如果响应不为空
         if (response != null) {
             // 根据响应状态码获取错误信息
             errorEnums = OpenAIErrorEnums.byI(response.code());
 
+            try {
+                log.error(response.body().string());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else {
             // 如果响应为空，返回默认的错误消息
             errorEnums = OpenAIErrorEnums.ERROR_999;
         }
-
+        //错误
+        eventPublisher.publishEvent(new ExceptionHandlerEvent(this,new OpenAIRequestException(errorEnums)));
         // 发布错误消息事件
         eventPublisher.publishEvent(new ErrorMessageEvent(this, platformApiKeysDto, apiKeys, errorEnums.getMessage(), apiKeys.getCreateUserName()));
 
-        // 完成事件的发射
+        //完成事件的发射
         sseEmitter.completeWithError(t);
 
-        // 取消事件源
+         //取消事件源
         eventSource.cancel();
 
-        // 打印异常堆栈
-        t.printStackTrace();
         throw new OpenAIRequestException(errorEnums);
     }
 

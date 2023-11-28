@@ -38,7 +38,6 @@ public class LoginController {
             throw new ServiceException("密码错误！", Constants.FAIL);
         }
         StpUtil.login(users.getUserId(), SaLoginConfig.setExtra("user",users));
-        Object user = StpUtil.getExtra("user");
         UsersDto convert = BeanUtils.convert(users, UsersDto.class);
         convert.setTokenName(StpUtil.getTokenName());
         convert.setTokenValue(StpUtil.getTokenValue());

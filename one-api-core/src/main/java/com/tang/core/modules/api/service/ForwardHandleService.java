@@ -11,6 +11,8 @@ import com.tang.core.config.ChannelTypeContent;
 import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.channel.model.dto.ChannelsVo;
 import com.tang.core.modules.channel.service.IChannelsService;
+import com.tang.core.modules.models.model.dto.ModelsDto;
+import com.tang.core.modules.models.service.IModelsService;
 import com.tang.core.modules.transfer.model.TransferApiKeys;
 import com.tang.core.modules.transfer.service.ITransferApiKeysService;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,9 @@ public class ForwardHandleService {
     @Autowired
     private IChannelsService iChannelsService;
 
+    @Autowired
+    private IModelsService iModelsService;
+
     public Object completions(ChatCompletion chatCompletion, String authorization){
 
         if (authorization==null){
@@ -50,7 +55,7 @@ public class ForwardHandleService {
         if (transferApiKey.getIsDisabled()){
             throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_302);
         }
-        if (transferApiKey.getQuotaRemaining().compareTo(transferApiKey.getQuotaUsed())<=0){
+        if (transferApiKey.getQuotaRemaining().compareTo(BigDecimal.ZERO)<=0){
             throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_305);
         }
         if (transferApiKey.getRequestCount().intValue()>=transferApiKey.getRequestLimit().intValue()){
@@ -64,12 +69,23 @@ public class ForwardHandleService {
         ChannelsVo channel = iChannelsService.queryChannelsById(transferApiKey.getChannelId());
         long endTime = System.currentTimeMillis();
         log.info("查询渠道：中转耗时："+(endTime-startTime)+"ms");
+
+
+        long startTime2 = System.currentTimeMillis();
+        //获取模型的信息。
+        ModelsDto model = iModelsService.getModelByName(chatCompletion.getModel(), channel.getCreateUserId());
+        long endTime2 = System.currentTimeMillis();
+        log.info("查询模型：中转耗时："+(endTime2-startTime2)+"ms");
+        //在数据库中不存在
+        if (Objects.isNull(model)){
+            throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_311);
+        }
+        if (!channel.getModels().contains(model.getModelId())){
+            throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_310);
+        }
         //渠道信息
         BaseHandleService service = ChannelTypeContent.CONTENT.get(ChannelTypeEnums.get(channel.getChannelType()));
         //传入请求参数，渠道信息，跟平台中转api-key
-
-
-
         return service.completions(chatCompletion,channel,transferApiKey);
     }
 

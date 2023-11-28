@@ -139,6 +139,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         vo.setChannelName(channels.getChannelName());
         vo.setChannelType(channels.getChannelType());
         vo.setApiKeys(apiKeys);
+        vo.setCreateUserId(channels.getCreateUserId());
         vo.setStrategy(channels.getStrategy()==null?0:channels.getStrategy());
         vo.setModels(models.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
         vo.setGroupIds(groups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
@@ -412,6 +413,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
             channelsVo.setGroupIds(channelGroups.stream().map(ChannelGroup::getGroupId).collect(Collectors.toList()));
             channelsVo.setModels(channelModels.stream().map(ChannelModel::getModelId).collect(Collectors.toList()));
             channelsVo.setApiKeys(apiKeys);
+            channelsVo.setCreateUserId(channels.getCreateUserId());
             //重新缓存信息
             redisService.setCacheObject(RedisConstants.CACHE_CHANNEL + id, channelsVo);
 

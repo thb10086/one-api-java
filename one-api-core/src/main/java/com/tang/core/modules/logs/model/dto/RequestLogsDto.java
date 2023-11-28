@@ -68,6 +68,8 @@ public class RequestLogsDto extends BaseEntity implements Serializable {
      */
     private BigDecimal quotaConsumed;
 
+    private String requestModel;
+
     private String remake;
 
 }

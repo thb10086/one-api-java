@@ -41,6 +41,11 @@ public class MybatisplusMetaObjectHandler implements MetaObjectHandler {
                 setFieldValByName("createTime", LocalDateTime.now(), metaObject);
                 setFieldValByName("delFlag", false, metaObject);
                 setFieldValByName("createUserName", user.get("username"), metaObject);
+            }else {
+                setFieldValByName("createUserId", 1L, metaObject);
+                setFieldValByName("createTime", LocalDateTime.now(), metaObject);
+                setFieldValByName("delFlag", false, metaObject);
+                setFieldValByName("createUserName", "admin", metaObject);
             }
         }
     }
