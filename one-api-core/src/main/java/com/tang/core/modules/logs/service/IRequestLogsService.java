@@ -1,9 +1,12 @@
 package com.tang.core.modules.logs.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tang.core.modules.api.event.ErrorMessageEvent;
 import com.tang.core.modules.api.event.MessageEvent;
 import com.tang.core.modules.logs.model.RequestLogs;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.tang.core.modules.logs.model.dto.RequestLogsDto;
+import com.tang.core.modules.logs.model.dto.RequestLogsReqDto;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 
@@ -19,10 +22,12 @@ public interface IRequestLogsService extends IService<RequestLogs> {
 
     @EventListener(classes = MessageEvent.class)
     @Async
-    public void saveLog(MessageEvent event);
+    void saveLog(MessageEvent event);
 
     @EventListener(classes = ErrorMessageEvent.class)
     @Async
-    public void saveErrorLog(ErrorMessageEvent event);
+    void saveErrorLog(ErrorMessageEvent event);
+
+    Page<RequestLogsDto> pageList(RequestLogsReqDto reqDto);
 
 }

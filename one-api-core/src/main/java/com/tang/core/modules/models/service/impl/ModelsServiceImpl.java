@@ -11,6 +11,7 @@ import com.tang.common.constant.RedisConstants;
 import com.tang.common.domain.BaseEntity;
 import com.tang.common.enums.OpenAIErrorEnums;
 import com.tang.common.exception.OpenAIRequestException;
+import com.tang.common.exception.ServiceException;
 import com.tang.common.utils.BeanUtils;
 import com.tang.common.utils.StringUtils;
 import com.tang.core.modules.models.model.Models;
@@ -137,6 +138,51 @@ public class ModelsServiceImpl extends ServiceImpl<ModelsMapper, Models> impleme
         userModel.setOutputMoney(modelsDto.getOutputMoney());
         userModel.setInputMoney(modelsDto.getInputMoney());
         iUserModelService.save(userModel);
+        //刷新缓存
+        refreshCache(modelsDto);
+        return true;
+    }
+    //需要登陆的接口刷新缓存
+    private void refreshCache(ModelsDto modelsDto){
+        Map<String, ModelsDto> cacheMap = redisService.getCacheMap(RedisConstants.CACHE_MODEL_USER + StpUtil.getLoginIdAsLong());
+        cacheMap.put(modelsDto.getModelName(),modelsDto);
+        redisService.setCacheObject(RedisConstants.CACHE_MODEL_USER+StpUtil.getLoginIdAsLong(),cacheMap);
+    }
+
+    private void clearCache(String modelName){
+        Map<String, ModelsDto> cacheMap = redisService.getCacheMap(RedisConstants.CACHE_MODEL_USER + StpUtil.getLoginIdAsLong());
+        cacheMap.remove(modelName);
+        redisService.setCacheObject(RedisConstants.CACHE_MODEL_USER+StpUtil.getLoginIdAsLong(),cacheMap);
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public Boolean deleteModel(Long modelId) {
+        Models models = getById(modelId);
+        if (!models.getCreateUserId().equals(StpUtil.getLoginIdAsLong())){
+            throw new ServiceException("不能删除自己除外的模型",500);
+        }
+        removeById(modelId);
+        iUserModelService.remove(new LambdaQueryWrapper<UserModel>().eq(UserModel::getModelId,modelId).eq(UserModel::getUserId,StpUtil.getLoginIdAsLong()));
+        clearCache(models.getModelName());
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public Boolean updateModel(ModelsDto modelsDto) {
+        if (modelsDto.getModelId()==null){
+            throw new ServiceException("模型id不能为空",500);
+        }
+        Models models = BeanUtils.convert(modelsDto, Models.class);
+        updateById(models);
+        UserModel userModel = iUserModelService.getOne(new LambdaQueryWrapper<UserModel>().eq(UserModel::getModelId, models.getModelId()).eq(BaseEntity::getCreateUserId, StpUtil.getLoginIdAsLong()));
+        userModel.setInputMoney(modelsDto.getInputMoney());
+        userModel.setOutputMoney(modelsDto.getOutputMoney());
+        userModel.setMagnification(modelsDto.getMagnification());
+        iUserModelService.updateById(userModel);
+        refreshCache(modelsDto);
         return true;
     }
 

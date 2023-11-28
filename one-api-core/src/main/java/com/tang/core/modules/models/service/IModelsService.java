@@ -26,6 +26,10 @@ public interface IModelsService extends IService<Models> {
 
     Boolean createModel(ModelsDto modelsDto);
 
+    Boolean deleteModel(Long modelId);
+
+    Boolean updateModel(ModelsDto modelsDto);
+
     Page<ModelsDto> queryList(ModelsReqDto reqDto);
 
     //默认模型

@@ -130,8 +130,8 @@ public class OpenAiListener extends EventSourceListener {
             // 如果响应为空，返回默认的错误消息
             errorEnums = OpenAIErrorEnums.ERROR_999;
         }
-        //错误
-        eventPublisher.publishEvent(new ExceptionHandlerEvent(this,new OpenAIRequestException(errorEnums)));
+//        //错误
+//        eventPublisher.publishEvent(new ExceptionHandlerEvent(this,new OpenAIRequestException(errorEnums)));
         // 发布错误消息事件
         eventPublisher.publishEvent(new ErrorMessageEvent(this, platformApiKeysDto, apiKeys, errorEnums.getMessage(), apiKeys.getCreateUserName()));
 
@@ -140,8 +140,8 @@ public class OpenAiListener extends EventSourceListener {
 
          //取消事件源
         eventSource.cancel();
-
-        throw new OpenAIRequestException(errorEnums);
+//
+//        throw new OpenAIRequestException(errorEnums);
     }
 
 

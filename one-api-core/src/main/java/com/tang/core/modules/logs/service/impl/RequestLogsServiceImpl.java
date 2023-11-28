@@ -1,7 +1,11 @@
 package com.tang.core.modules.logs.service.impl;
 
 import cn.dev33.satoken.temp.SaTempUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
+import com.tang.common.domain.BaseEntity;
+import com.tang.common.utils.StringUtils;
 import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.api.chat.ChatCompletionResponse;
 import com.tang.core.modules.api.chat.Message;
@@ -12,7 +16,9 @@ import com.tang.core.modules.channel.model.dto.ChannelsVo;
 import com.tang.core.modules.channel.service.IChannelsService;
 import com.tang.core.modules.logs.model.RequestLogs;
 import com.tang.core.modules.logs.mapper.RequestLogsMapper;
+import com.tang.core.modules.logs.model.dto.RequestLogsDto;
 import com.tang.core.modules.logs.model.dto.RequestLogsEvent;
+import com.tang.core.modules.logs.model.dto.RequestLogsReqDto;
 import com.tang.core.modules.logs.service.IRequestLogsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tang.core.modules.models.model.dto.ModelsDto;
@@ -102,6 +108,21 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         ChannelsVo channelsVo = channelsService.queryChannelsById(event.getApiKeys().getChannelId());
         event.getApiKeys().setIsDisabled(true);
         iPlatformApiKeysService.updatePlatformApiKeys(event.getApiKeys(),channelsVo);
+    }
+
+    @Override
+    public Page<RequestLogsDto> pageList(RequestLogsReqDto reqDto) {
+        LambdaQueryWrapper<RequestLogs> queryWrapper = new LambdaQueryWrapper<RequestLogs>()
+                .like(StringUtils.hasText(reqDto.getKeyName()), RequestLogs::getKeyName, reqDto.getKeyName())
+                .like(StringUtils.hasText(reqDto.getUserName()), RequestLogs::getUserName, reqDto.getUserName())
+                .like(StringUtils.hasText(reqDto.getRequestModel()), RequestLogs::getRequestModel, reqDto.getRequestModel())
+                .ge(Objects.nonNull(reqDto.getRequestTimeStart()), RequestLogs::getRequestTime, reqDto.getRequestTimeStart())
+                .le(Objects.nonNull(reqDto.getRequestTimeEnd()), RequestLogs::getRequestTime, reqDto.getRequestTimeEnd())
+                .eq(BaseEntity::getCreateUserId, reqDto)
+                .orderByDesc(BaseEntity::getCreateTime);
+
+        Page page = page(reqDto.startPage(), queryWrapper);
+        return page;
     }
 
 

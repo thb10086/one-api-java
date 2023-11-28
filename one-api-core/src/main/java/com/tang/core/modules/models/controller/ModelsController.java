@@ -1,8 +1,10 @@
 package com.tang.core.modules.models.controller;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tang.common.domain.R;
 import com.tang.core.modules.models.model.dto.ModelsDto;
+import com.tang.core.modules.models.model.dto.ModelsReqDto;
 import com.tang.core.modules.models.service.IModelsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +34,19 @@ public class ModelsController {
         return R.ok(iModelsService.createModel(modelsDto));
     }
 
+    @PostMapping("/deleteModel")
+    public R<Boolean> deleteModel(@RequestBody Long modelId){
+        return R.ok(iModelsService.deleteModel(modelId));
+    }
 
+    @PostMapping("/updateModel")
+    public R<Boolean> updateModel(@RequestBody @Validated ModelsDto modelsDto){
+        return R.ok(iModelsService.updateModel(modelsDto));
+    }
 
+    @PostMapping("/queryList")
+    public R<Page<ModelsDto>> queryList(@RequestBody ModelsReqDto reqDto){
+        return R.ok(iModelsService.queryList(reqDto));
+    }
 }
 
