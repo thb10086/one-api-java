@@ -7,6 +7,7 @@ import lombok.Data;
 
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 
 /**
@@ -29,15 +30,17 @@ public class Users extends BaseEntity implements Serializable {
 
     private String password;
 
+    private String avatar;
+
     /**
      * 额度限制
      */
-    private Integer quotaLimit;
+    private BigDecimal quotaLimit;
 
     /**
      * 已使用额度
      */
-    private Integer quotaUsed;
+    private BigDecimal quotaUsed;
 
     /**
      * 状态
@@ -52,12 +55,12 @@ public class Users extends BaseEntity implements Serializable {
     /**
      * 剩余额度
      */
-    private Integer quotaRemaining;
+    private BigDecimal quotaRemaining;
 
     /**
      * 用户类型
      */
-    private String userType;
+    private Integer userType;
 
 
 }

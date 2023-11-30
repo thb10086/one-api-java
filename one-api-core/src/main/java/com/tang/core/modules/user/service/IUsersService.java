@@ -1,5 +1,6 @@
 package com.tang.core.modules.user.service;
 
+import com.tang.core.modules.user.dto.UsersDto;
 import com.tang.core.modules.user.model.Users;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -12,5 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2023-11-10
  */
 public interface IUsersService extends IService<Users> {
-
+    public UsersDto getUserInfo(Long userId);
 }

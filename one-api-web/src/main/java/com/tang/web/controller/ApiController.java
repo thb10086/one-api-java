@@ -1,4 +1,4 @@
-package com.tang.web.api.controller;
+package com.tang.web.controller;
 
 import com.tang.core.modules.api.chat.ChatCompletion;
 import com.tang.core.modules.api.service.ForwardHandleService;

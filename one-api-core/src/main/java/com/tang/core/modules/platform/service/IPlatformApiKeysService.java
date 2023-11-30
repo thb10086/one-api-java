@@ -30,7 +30,7 @@ public interface IPlatformApiKeysService extends IService<PlatformApiKeys> {
      * @param channelIds
      * @return
      */
-    List<PlatformApiKeysDto> getPlatformApiKeysByChannelIds(List<Long> channelIds);
+    List<PlatformApiKeysDto>  getPlatformApiKeysByChannelIds(List<Long> channelIds);
 
 
     /**

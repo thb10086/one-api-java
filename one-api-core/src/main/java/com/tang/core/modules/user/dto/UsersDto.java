@@ -1,9 +1,12 @@
 package com.tang.core.modules.user.dto;
 
+import com.tang.core.modules.groups.model.dto.GroupsDto;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -24,15 +27,19 @@ public class UsersDto implements Serializable {
 
     private String username;
 
+    private String avatar;
+
+    private String email;
+
     /**
      * 额度限制
      */
-    private Integer quotaLimit;
+    private BigDecimal quotaLimit;
 
     /**
      * 已使用额度
      */
-    private Integer quotaUsed;
+    private BigDecimal quotaUsed;
 
     /**
      * 状态
@@ -47,25 +54,19 @@ public class UsersDto implements Serializable {
     /**
      * 剩余额度
      */
-    private Integer quotaRemaining;
+    private BigDecimal quotaRemaining;
 
     /**
      * 用户类型
      */
-    private String userType;
+    private Integer userType;
+
+    private String userTypeDesc;
 
     /**
      * 用户所属的分组ID
      */
-    private Integer groupId;
+    private List<GroupsDto> groupList;
 
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
-
-    private String tokenName;
-
-    private String tokenValue;
 
 }

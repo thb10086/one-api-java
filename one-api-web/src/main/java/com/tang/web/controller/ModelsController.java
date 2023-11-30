@@ -1,4 +1,4 @@
-package com.tang.core.modules.models.controller;
+package com.tang.web.controller;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

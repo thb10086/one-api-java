@@ -1,6 +1,8 @@
-package com.tang.web.transfer.controller;
+package com.tang.web.controller;
 
 
+import cn.dev33.satoken.secure.SaSecureUtil;
+import cn.dev33.satoken.stp.StpLogic;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tang.common.domain.R;
 import com.tang.core.modules.transfer.model.dto.TransferApiKeysCreateDto;
@@ -10,6 +12,12 @@ import com.tang.core.modules.transfer.service.ITransferApiKeysService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.HashMap;
 
 /**
  * <p>
@@ -29,6 +37,7 @@ public class TransferApiKeysController {
     public R<Boolean> createTransferApiKey(@RequestBody @Validated TransferApiKeysCreateDto dto){
         return R.ok(iTransferApiKeysService.createTransferApiKey(dto));
     }
+
 
     @GetMapping("/transfer/queryTransferApiKeys")
     public R<Page<TransferApiKeysDto>> queryTransferApiKeys(TransferApiKeysReqDto dto){

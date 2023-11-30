@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 public class GroupsServiceImpl extends ServiceImpl<GroupsMapper, Groups> implements IGroupsService {
 
     @Override
-    public List<GroupsDto> getGroups() {
+    public List<GroupsDto> getUserGroups(Long userId) {
         LambdaQueryWrapper<Groups> queryWrapper = new LambdaQueryWrapper<Groups>()
-                .eq(Groups::getCreateUserId, StpUtil.getLoginId())
+                .eq(Groups::getCreateUserId, userId)
                 .eq(Groups::getDelFlag, false);
         List<Groups> list = list(queryWrapper);
         return BeanUtils.convert(list,GroupsDto.class);
@@ -42,7 +42,7 @@ public class GroupsServiceImpl extends ServiceImpl<GroupsMapper, Groups> impleme
                     .map(Long::valueOf)
                     .collect(Collectors.toList());
 
-            Set<Long> modelsDtoList = getGroups().stream()
+            Set<Long> modelsDtoList = getUserGroups(StpUtil.getLoginIdAsLong()).stream()
                     .map(GroupsDto::getGroupId)
                     .collect(Collectors.toSet());
 

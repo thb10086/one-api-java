@@ -326,7 +326,6 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         List<UserGroup> userGroups = iUserGroupService.queryUserGroup(userId);
         if (channelsReqDto.getGroupId()!=null){
             boolean b = userGroups.stream().anyMatch(i -> i.getGroupId().equals(channelsReqDto.getGroupId()));
-
             if (!b){
                 throw new ServiceException("您没有这个分组权限！",500);
             }
@@ -358,7 +357,7 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
         //对数据进行处理
         List<ChannelsResponseDto> dtoList = BeanUtils.convert(page.getRecords(), ChannelsResponseDto.class);
         //分组
-        Map<Long, GroupsDto> groupsDtoMap = iGroupsService.getGroups().stream().collect(Collectors.toMap(GroupsDto::getGroupId, Function.identity()));
+        Map<Long, GroupsDto> groupsDtoMap = iGroupsService.getUserGroups(userId).stream().collect(Collectors.toMap(GroupsDto::getGroupId, Function.identity()));
         //根据渠道分组，获取渠道下的所有分组
         Map<Long, List<ChannelGroup>> channelGroupMap = channelGroups.stream().collect(Collectors.groupingBy(ChannelGroup::getChannelId));
 
@@ -377,10 +376,14 @@ public class ChannelsServiceImpl extends ServiceImpl<ChannelsMapper, Channels> i
             }
             dto.setGroups(sb.toString());
             List<PlatformApiKeysDto> apikeyList = apiKeysDtoMap.get(dto.getChannelId());
-            //正常用的key
-            long count = apikeyList.stream().filter(i -> !i.getIsDisabled()).count();
-            long sum = apikeyList.size();
-            dto.setRate(count+"/"+sum);
+            if (CollectionUtil.isEmpty(apikeyList)){
+                dto.setRate("0/0");
+            }else {
+                //正常用的key
+                long count = apikeyList.stream().filter(i -> !i.getIsDisabled()).count();
+                long sum = apikeyList.size();
+                dto.setRate(count+"/"+sum);
+            }
         }
         Page<ChannelsResponseDto> resultPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
         resultPage.setRecords(dtoList);

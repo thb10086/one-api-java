@@ -16,8 +16,10 @@ import java.util.List;
  */
 public interface IGroupsService extends IService<Groups> {
 
-    List<GroupsDto> getGroups();
+    List<GroupsDto> getUserGroups(Long userId);
 
     Boolean checkGroups(String groups);
+
+
 
 }

@@ -1,4 +1,4 @@
-package com.tang.web.channel.controller;
+package com.tang.web.controller;
 
 
 import com.alibaba.fastjson.JSON;
