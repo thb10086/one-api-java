@@ -4,7 +4,7 @@ one-api的java版本
 为解决one-api的短板，推出了one-api的java版本。
 
 ## 技术栈
-springboot+redis+mybatis-plus+mysql
+springboot+redis+mybatis-plus+mysql-sa-token
 请求框架用的okHttps
 
 
