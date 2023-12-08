@@ -27,6 +27,7 @@ import com.tang.core.modules.platform.service.IPlatformApiKeysService;
 import com.tang.core.modules.transfer.model.TransferApiKeys;
 import com.tang.core.modules.transfer.service.ITransferApiKeysService;
 import com.tang.core.modules.user.model.Users;
+import com.tang.core.modules.user.service.IUsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,9 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
     @Autowired
     IChannelsService channelsService;
 
+    @Autowired
+    IUsersService iUsersService;
+
     @Override
     public void saveLog(MessageEvent event) {
         //响应对象
@@ -68,6 +72,7 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         if (Objects.isNull(model)){
             model = iModelsService.getDefaultModel();
         }
+        TransferApiKeys apiKeys = event.getApiKeys();
         RequestLogs logs = new RequestLogs();
         logs.setRequestModel(model.getModelName());
         //输出tokens计算
@@ -75,13 +80,13 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         //输入tokens计算
         logs.setInputTokens(TikTokensUtil.tokens(completion.getModel(),completion.getMessages()));
         //设置apikey
-        logs.setApiKeyId(event.getApiKeys().getTransferKeyId());
+        logs.setApiKeyId(apiKeys.getTransferKeyId());
         //用户名称
-        logs.setUserName(event.getUserName());
+        logs.setUserName(apiKeys.getCreateUserName());
         //请求状态
         logs.setRequestStatus(true);
         //密钥的名称
-        logs.setKeyName(event.getApiKeys().getKeyName());
+        logs.setKeyName(apiKeys.getKeyName());
         //输入金额
         BigDecimal inputMoney = model.getInputMoney().multiply(new BigDecimal(logs.getInputTokens()).divide(new BigDecimal("1000"),BigDecimal.ROUND_HALF_UP,3));
         //输出金额
@@ -89,7 +94,9 @@ public class RequestLogsServiceImpl extends ServiceImpl<RequestLogsMapper, Reque
         logs.setQuotaConsumed(inputMoney.add(outputMoney).multiply(model.getMagnification()==null?new BigDecimal("1"):model.getMagnification()));
         save(logs);
         //去扣这个key的额度
-        iTransferApiKeysService.updateQuota(event.getApiKeys().getTransferKeyId(),logs.getQuotaConsumed());
+        iTransferApiKeysService.updateQuota(apiKeys.getTransferKeyId(),logs.getQuotaConsumed());
+        //扣减用户额度
+        iUsersService.deductionAmount(apiKeys.getUserId(),logs.getQuotaConsumed());
     }
 
     @Override

@@ -13,6 +13,9 @@ public enum OpenAIErrorEnums {
     ERROR_310(310,"渠道下不存在该模型"),
     ERROR_311(311,"系统中不存在该模型"),
     ERROR_312(312,"此模型没有设置计费标准"),
+    ERROR_313(313,"用户被冻结，请联系管理员！"),
+    ERROR_314(314,"用户额度不足，请联系管理员！"),
+
     NO_FIND_MODEL(404, "不支持的模型"),
     MESSAGE_NOT_NUL(500, "Message 不能为空"),
     API_KEYS_NOT_NUL(500, "API KEYS 不能为空"),

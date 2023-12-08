@@ -15,14 +15,12 @@ public class MessageEvent extends ApplicationEvent {
 
     private ChatCompletion completion;
     private ChatCompletionResponse response;
-    private String userName;
     private Long userId;
     private TransferApiKeys apiKeys;
 
-    public MessageEvent(Object source,ChatCompletionResponse response,ChatCompletion completion,String userName,Long userId,TransferApiKeys apiKeys) {
+    public MessageEvent(Object source,ChatCompletionResponse response,ChatCompletion completion,Long userId,TransferApiKeys apiKeys) {
         super(source);
         this.apiKeys=apiKeys;
-        this.userName=userName;
         this.completion=completion;
         this.userId = userId;
         this.response=response;

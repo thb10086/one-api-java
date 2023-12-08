@@ -15,6 +15,8 @@ import com.tang.core.modules.models.model.dto.ModelsDto;
 import com.tang.core.modules.models.service.IModelsService;
 import com.tang.core.modules.transfer.model.TransferApiKeys;
 import com.tang.core.modules.transfer.service.ITransferApiKeysService;
+import com.tang.core.modules.user.model.Users;
+import com.tang.core.modules.user.service.IUsersService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,6 +39,9 @@ public class ForwardHandleService {
 
     @Autowired
     private IModelsService iModelsService;
+
+    @Autowired
+    private IUsersService iUsersService;
 
     public Object completions(ChatCompletion chatCompletion, String authorization){
 
@@ -64,13 +69,19 @@ public class ForwardHandleService {
         if (transferApiKey.getExpTime().compareTo(LocalDateTime.now())<=0){
             throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_309);
         }
+        Users users = iUsersService.getById(transferApiKey.getUserId());
+        if (!users.getStatus()){
+            throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_313);
+        }
+        if (users.getQuotaRemaining().compareTo(BigDecimal.ZERO)<=0){
+            throw new OpenAIRequestException(OpenAIErrorEnums.ERROR_314);
+        }
+
         //获取渠道信息
         long startTime = System.currentTimeMillis();
         ChannelsVo channel = iChannelsService.queryChannelsById(transferApiKey.getChannelId());
         long endTime = System.currentTimeMillis();
         log.info("查询渠道：中转耗时："+(endTime-startTime)+"ms");
-
-
         long startTime2 = System.currentTimeMillis();
         //获取模型的信息。
         ModelsDto model = iModelsService.getModelByName(chatCompletion.getModel(), channel.getCreateUserId());

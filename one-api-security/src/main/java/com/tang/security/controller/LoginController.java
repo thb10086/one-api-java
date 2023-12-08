@@ -15,8 +15,13 @@ import com.tang.security.model.UserLoginDto;
 import com.tang.core.modules.user.model.Users;
 import com.tang.security.model.UsersLogonDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Base64Utils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/sys")
@@ -65,11 +70,13 @@ public class LoginController {
         user = new Users();
         user.setUsername(reqDto.getUsername());
         user.setPassword(SaSecureUtil.sha256(reqDto.getPassword()));
+        user.setQuotaLimit(new BigDecimal("10"));
+        user.setQuotaRemaining(new BigDecimal("10"));
+        user.setQuotaUsed(BigDecimal.ZERO);
         user.setStatus(true);
         iUsersService.save(user);
         return R.ok(true,"注册成功！");
     }
-
 
 
 }

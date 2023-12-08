@@ -74,5 +74,9 @@ public interface IChannelsService extends IService<Channels> {
      * @return
      */
     Boolean testApiKey(Long apiKeyId);
+    default void  test(){
+        System.out.println("123");
+        return;
+    }
 
 }

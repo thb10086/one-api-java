@@ -63,7 +63,7 @@ public class OpenAiListener extends EventSourceListener {
         choice.setFinishReason(finishReason);
         chatCompletionResponse.setChoices(Lists.newArrayList(choice));
         //发送消息给日志
-        eventPublisher.publishEvent(new MessageEvent(this,chatCompletionResponse,chatCompletion,apiKeys.getCreateUserName(),channelsVo.getCreateUserId(),apiKeys));
+        eventPublisher.publishEvent(new MessageEvent(this,chatCompletionResponse,chatCompletion,channelsVo.getCreateUserId(),apiKeys));
         sseEmitter.complete();
         log.info("关闭连接");
         chatCompletionResponse = null;
